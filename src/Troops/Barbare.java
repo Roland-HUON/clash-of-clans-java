@@ -3,7 +3,6 @@ package Troops;
 public class Barbare implements Troop {
     private static final int maxLevel = 13;
     private static int ID_CPT = 1;
-    private static int levelIncrease = 1;
 
     int id;
     int pv;
@@ -72,8 +71,12 @@ public class Barbare implements Troop {
     }
 
     @Override
-    public void onLeveling() {
-        this.level = level + levelIncrease;
+    public void upgrade() {
+        if(level >= .maxLevel()){
+            throw new IllegalStateException(name + " is already at max level !");
+        }
+        this.level++;
+        this.
     }
 
     @Override
@@ -83,6 +86,6 @@ public class Barbare implements Troop {
 
     @Override
     public void onDeath() {
-
+        this.pv = 0;
     }
 }

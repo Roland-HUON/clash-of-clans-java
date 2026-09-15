@@ -1,6 +1,8 @@
 package Spells;
 
-public class Rage {
+import Troops.Troop;
+
+public class Rage implements Spell {
     private static int maxLevel = 7;
     private static int ID_CPT = 1;
     private static int levelIncrease = 1;
@@ -67,5 +69,10 @@ public class Rage {
 
     public void setLevelDuration(int levelDuration) {
         this.levelDuration = levelDuration;
+    }
+
+    @Override
+    public void ability() {
+
     }
 }

@@ -1,7 +1,7 @@
 package Heros;
 
 public interface Hero {
-    void onLeveling();
+    void upgrade();
     void onAttack();
     void abilities();
     void onDeath();
