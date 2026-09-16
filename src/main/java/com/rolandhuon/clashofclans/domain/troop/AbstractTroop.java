@@ -44,6 +44,10 @@ public abstract class AbstractTroop implements Troop {
         this.dps = stats.dps();
     }
 
+    public String getName(){
+        return type.label() + " lv." + level;
+    }
+
     public void upgrade(){
         if(level >= type.maxLevel()) throw new IllegalStateException("Already max level.");
         applyLevel(++level);
