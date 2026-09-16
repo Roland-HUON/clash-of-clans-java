@@ -1,10 +1,11 @@
 package com.rolandhuon.clashofclans.domain.troop;
 
 import com.rolandhuon.clashofclans.domain.common.AttackProfile;
+import com.rolandhuon.clashofclans.domain.common.EntityType;
 
 import java.util.List;
 
-public enum TroopType {
+public enum TroopType implements EntityType {
     BARBARIAN("Barbarian", 1, AttackProfile.single(0.4), List.of(
             new TroopStats(45, 8),
             new TroopStats(54, 11),
@@ -51,8 +52,14 @@ public enum TroopType {
         this.statsByLevel = List.copyOf(statsByLevel);
     }
 
+    @Override
     public int maxLevel(){
         return statsByLevel.size();
+    }
+
+    @Override
+    public int hpAt(int level) {
+        return statsAt(level).hp();
     }
 
     public TroopStats statsAt(int level){
@@ -60,6 +67,7 @@ public enum TroopType {
         return statsByLevel.get(level - 1);
     }
 
+    @Override
     public String label(){
         return label;
     }
