@@ -1,6 +1,4 @@
-package Spells;
-
-import Troops.Troop;
+package com.rolandhuon.clashofclans.domain.spell;
 
 public class Rage implements Spell {
     private static int maxLevel = 7;

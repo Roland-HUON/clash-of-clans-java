@@ -1,6 +1,8 @@
-import Heros.Hero;
-import Spells.Spell;
-import Troops.Troop;
+package com.rolandhuon.clashofclans.domain.player;
+
+import com.rolandhuon.clashofclans.domain.hero.Hero;
+import com.rolandhuon.clashofclans.domain.spell.Spell;
+import com.rolandhuon.clashofclans.domain.troop.Troop;
 
 import java.util.List;
 

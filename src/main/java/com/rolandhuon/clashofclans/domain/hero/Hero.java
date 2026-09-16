@@ -1,4 +1,4 @@
-package Heros;
+package com.rolandhuon.clashofclans.domain.hero;
 
 public interface Hero {
     void upgrade();

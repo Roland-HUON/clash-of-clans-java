@@ -1,8 +1,6 @@
-package Building;
+package com.rolandhuon.clashofclans.domain.building;
 
-import Heros.Hero;
-import Spells.Spell;
-import Troops.Troop;
+import com.rolandhuon.clashofclans.domain.hero.Hero;
 
 import java.util.List;
 

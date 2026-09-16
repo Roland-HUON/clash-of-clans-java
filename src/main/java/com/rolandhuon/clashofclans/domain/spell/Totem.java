@@ -1,4 +1,4 @@
-package Spells;
+package com.rolandhuon.clashofclans.domain.spell;
 
 public class Totem {
     private static int maxLevel = 7;
