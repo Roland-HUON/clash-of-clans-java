@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: clash-of-clans
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+coc:
+  battle:
+    max-turns: 180
