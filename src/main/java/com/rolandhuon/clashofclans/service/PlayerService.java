@@ -2,7 +2,9 @@ package com.rolandhuon.clashofclans.service;
 
 import com.rolandhuon.clashofclans.dto.PlayerRequest;
 import com.rolandhuon.clashofclans.model.Player;
+import com.rolandhuon.clashofclans.model.PlayerTroop;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
+import com.rolandhuon.clashofclans.repository.PlayerTroopRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +13,16 @@ import java.util.List;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
+    private final PlayerTroopRepository troopRepository;
 
-    public PlayerService(PlayerRepository playerRepository) {
+    public PlayerService(PlayerRepository playerRepository, PlayerTroopRepository troopRepository) {
         this.playerRepository = playerRepository;
+        this.troopRepository = troopRepository;
+    }
+
+    public List<PlayerTroop> findTroopsOf(Long playerId) {
+        if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
+        return troopRepository.findByPlayerId(playerId);
     }
 
     public Player create(PlayerRequest request) {

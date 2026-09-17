@@ -1,7 +1,9 @@
 package com.rolandhuon.clashofclans.domain.building;
 
-public record BuildingStats(int hp) {
+public record BuildingStats(int hp, int goldCost) {
+
     public BuildingStats{
         if(hp <= 0) throw new IllegalArgumentException("No valid stats !");
+        if(goldCost < 0) throw new IllegalArgumentException("Upgrade cost must be >= 0");
     }
 }

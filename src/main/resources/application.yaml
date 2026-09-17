@@ -9,3 +9,4 @@ spring:
 coc:
   battle:
     max-turns: 180
+    max-housing-space: 352
