@@ -23,7 +23,7 @@ public class BattleService {
         this.targetingStrategy = targetingStrategy;
     }
 
-    public BattleResult report(List<Troop> army, Village village){
+    public BattleResult fight(List<Troop> army, Village village){
         int turns = 0;
         while(!village.isDestroyed() && turns < MAX_TURNS){
             List<Troop> aliveTroop = army.stream()
@@ -37,9 +37,9 @@ public class BattleService {
             }
             turns++;
         }
-        int remainingTroop = (int) army.stream()
+        int remainingTroops = (int) army.stream()
                 .filter(t -> t.isAlive())
                 .count();
-        return new BattleResult(village.destructionPercentage(), turns, remainingTroop);
+        return new BattleResult(village.destructionPercentage(), turns, remainingTroops);
     }
 }

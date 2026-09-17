@@ -1,46 +1,80 @@
 package com.rolandhuon.clashofclans.app;
 
+import com.rolandhuon.clashofclans.domain.battle.BattleResult;
+import com.rolandhuon.clashofclans.domain.building.HeroHall;
+import com.rolandhuon.clashofclans.domain.building.Laboratory;
 import com.rolandhuon.clashofclans.domain.troop.Archer;
 import com.rolandhuon.clashofclans.domain.troop.Barbarian;
-import com.rolandhuon.clashofclans.service.CombatService;
+import com.rolandhuon.clashofclans.domain.troop.Troop;
+import com.rolandhuon.clashofclans.domain.village.Village;
+import com.rolandhuon.clashofclans.service.BattleService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class GameCliRunner implements CommandLineRunner {
 
-    private final CombatService combatService;
+    private final BattleService battleService;
 
-    public GameCliRunner(CombatService combatService){
-        this.combatService = combatService;
+    public GameCliRunner(BattleService battleService){
+        this.battleService = battleService;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        var barbarian1 = new Barbarian(13);
-        var archer1= new Archer(14);
 
-        System.out.println(barbarian1.getName() + " vs " + archer1.getName());
+        final List<Troop> army1 = new ArrayList<>();
+        final List<Troop> army2 = new ArrayList<>();
+        final Village village1 = new Village();
+        final Village village2 = new Village();
 
-        System.out.println("Barbarian stats : ");
-        System.out.println("Unit : " +  barbarian1.getName());
-        System.out.println("HP : " +  barbarian1.getHp());
-        System.out.println("DPS : " +  barbarian1.getDps());
-        System.out.println("Range : " +  barbarian1.getType().attackProfile().range());
-
-        System.out.println("Archer stats : ");
-        System.out.println("Unit : " +  archer1.getName());
-        System.out.println("HP : " +  archer1.getHp());
-        System.out.println("DPS : " +  archer1.getDps());
-        System.out.println("Range : " +  archer1.getType().attackProfile().range());
-
-        while(barbarian1.isAlive() && archer1.isAlive()){
-            combatService.resolveAttack(barbarian1, archer1);
-            System.out.println(barbarian1.getName() + " dealt " + barbarian1.getDps() + " to " + archer1.getName() + ". " + archer1.getHp() + "/" + archer1.getMaxHp());
-            if(archer1.isAlive()) {
-                combatService.resolveAttack(archer1, barbarian1);
-                System.out.println(archer1.getName() + " dealt " + archer1.getDps() + " to " + barbarian1.getName() + ". " + barbarian1.getHp() + "/" + barbarian1.getMaxHp());
-            }
+        for(int i = 0; i<13; i++){
+            var barbarian = new Barbarian(13);
+            army1.add(barbarian);
         }
+        for(int i = 0; i<10; i++){
+            var archer = new Archer(14);
+            army1.add(archer);
+        }
+        for(int i = 0; i<3; i++){
+            var archer = new Archer(14);
+            army1.add(archer);
+        }
+
+        /*for(int i = 0; i<17; i++){
+            var barbarian = new Barbarian(13);
+            army2.add(barbarian);
+        }
+        for(int i = 0; i<6; i++){
+            var archer = new Archer(14);
+            army2.add(archer);
+        }
+        var laboratory1 = new Laboratory(10);
+        var herohall1 = new HeroHall(10);
+        village1.addBuilding(laboratory1);
+        village1.addBuilding(herohall1);*/
+
+        var laboratory2 = new Laboratory(15);
+        var herohall2 = new HeroHall(12);
+        village2.addBuilding(laboratory2);
+        village2.addBuilding(herohall2);
+
+        System.out.println("=== RAID ===");
+        System.out.println("Army   : " + army1.size() + " troops");
+        System.out.println("Village : " + village2.aliveTargets().size() + " buildings");
+        System.out.println();
+
+        BattleResult result = battleService.fight(army1, village2);
+
+        System.out.println();
+        System.out.println("=== RESULT ===");
+        System.out.println("Destruction  : " + result.destructionPercentage() + "%");
+        System.out.println("Stars      : " + result.stars());
+        System.out.println("Turns        : " + result.turns());
+        System.out.println("Remainings troops   : " + result.survivingTroops() + " / " + army1.size());
+        System.out.println("Village destroyed : " + result.villageDestroyed());
     }
 }
