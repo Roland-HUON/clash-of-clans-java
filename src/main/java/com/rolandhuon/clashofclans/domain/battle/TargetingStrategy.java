@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface TargetingStrategy{
     Optional<Damageable> chooseTarget(List<Damageable> targets);
+
+    TargetingMode mode();
 }

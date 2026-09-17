@@ -24,7 +24,7 @@ public class Village {
     }
 
     public boolean isDestroyed(){
-        return buildings.stream().noneMatch(Building::isAlive);
+        return !buildings.isEmpty() && buildings.stream().noneMatch(Building::isAlive);
     }
 
     public int destructionPercentage(){

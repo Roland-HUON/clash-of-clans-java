@@ -7,3 +7,15 @@ services:
       POSTGRES_PASSWORD: coc
     ports:
       - "5432:5432"
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/coc
+      SPRING_DATASOURCE_USERNAME: coc
+      SPRING_DATASOURCE_PASSWORD: coc
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"

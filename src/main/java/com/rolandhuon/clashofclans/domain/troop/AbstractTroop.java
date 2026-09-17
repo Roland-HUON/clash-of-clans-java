@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.domain.troop;
 
+import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
 import com.rolandhuon.clashofclans.domain.common.Damageable;
 import com.rolandhuon.clashofclans.domain.entity.AbstractDamageableEntity;
 
@@ -33,4 +34,6 @@ public abstract class AbstractTroop extends AbstractDamageableEntity<TroopType> 
     public int getHousingSpace(){
         return getType().housingSpace();
     }
+
+    public TargetingMode targetingMode(){ return getType().targetingMode(); }
 }

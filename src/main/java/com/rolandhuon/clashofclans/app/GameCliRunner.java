@@ -9,11 +9,13 @@ import com.rolandhuon.clashofclans.domain.troop.Troop;
 import com.rolandhuon.clashofclans.domain.village.Village;
 import com.rolandhuon.clashofclans.service.BattleService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Profile("demo")
 @Component
 public class GameCliRunner implements CommandLineRunner {
 
