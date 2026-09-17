@@ -64,6 +64,10 @@ public enum BuildingType implements EntityType {
         return statsByLevel.get(level - 1);
     }
 
+    public int maxCount(){
+        return maxCount;
+    }
+
     @Override
     public String label(){
         return label;
