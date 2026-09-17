@@ -75,6 +75,5 @@ public class GameCliRunner implements CommandLineRunner {
         System.out.println("Stars      : " + result.stars());
         System.out.println("Turns        : " + result.turns());
         System.out.println("Remainings troops   : " + result.survivingTroops() + " / " + army1.size());
-        System.out.println("Village destroyed : " + result.villageDestroyed());
     }
 }
