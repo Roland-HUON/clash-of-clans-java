@@ -110,6 +110,12 @@ spec = json.loads(http('/v3/api-docs', user='user:password')[1])
 ops = sum(len([m for m in v if m in ('get','post','put','patch','delete')]) for v in spec['paths'].values())
 endpoints = int(re.search(r'covering all (\d+) endpoints', readme).group(1))
 check(f'the README claims {endpoints} endpoints and Swagger publishes {ops}', endpoints == ops)
+schemes = spec.get('components', {}).get('securitySchemes', {})
+check('Swagger UI can authenticate: the document declares an HTTP Basic scheme',
+      any(v.get('type') == 'http' and v.get('scheme') == 'basic' for v in schemes.values()),
+      str(list(schemes)))
+check('every operation is covered by that scheme', bool(spec.get('security')))
+
 check('no operation carries a ghost 400/404/409',
       not any(set(op.get('responses', {})) == {'200','400','404','409'}
               for v in spec['paths'].values() for m, op in v.items() if m != 'parameters'))

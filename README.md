@@ -461,6 +461,12 @@ bolting the `@RestControllerAdvice` handlers onto every operation, which otherwi
 `GET /api/troop-types` advertise a `409` it can never return. The eight groups are Players, Villages, Upgrades, Raids, Battles,
 Leaderboard, Troop types and Building types.
 
+**Press Authorize before you try an operation out.** The document declares one HTTP
+Basic scheme, so Swagger UI sends `Authorization: Basic` with every call it makes and
+those calls are exempt from the CSRF token. Without it, Swagger UI falls back on the
+browser session cookie, which carries no `X-XSRF-TOKEN` header — the thirteen `GET`
+operations would still answer, and all eleven writes would come back `403`.
+
 ## Performance notes
 
 `GET /api/villages` returns the fifty seeded villages in **one** statement: the
