@@ -5,6 +5,10 @@ A Clash of Clans game engine written in Java 21 on Spring Boot 4.1.1, exposed ov
 Players own villages, villages hold buildings, buildings and troops are upgraded
 with three different currencies, and players raid each other for loot and trophies.
 
+## Member
+- HUON Roland
+
+
 ## Requirements
 
 - **JDK 21**, on your `PATH` or as `JAVA_HOME`. The Maven wrapper downloads Maven,
