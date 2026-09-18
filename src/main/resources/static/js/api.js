@@ -7,11 +7,22 @@ class ApiError extends Error {
   }
 }
 
+function csrfToken() {
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function request(path, options = {}) {
-  const response = await fetch(BASE + path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
-  });
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = csrfToken();
+  if (token && options.method && options.method !== 'GET') headers['X-XSRF-TOKEN'] = token;
+
+  const response = await fetch(BASE + path, { ...options, headers, credentials: 'same-origin' });
+
+  if (response.status === 401) {
+    window.location.href = '/login.html';
+    throw new ApiError(401, 'Your session has expired — signing in again.');
+  }
 
   const text = await response.text();
 
@@ -47,4 +58,4 @@ export const api = {
     request(`/villages/${villageId}/buildings`, { method: 'POST', body: JSON.stringify(payload) })
 };
 
-export { ApiError };
+export { ApiError, csrfToken };

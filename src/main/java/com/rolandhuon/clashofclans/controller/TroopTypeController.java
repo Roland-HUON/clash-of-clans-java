@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/troop-types")
 public class TroopTypeController {
-        @Operation(summary = "List troop types",
+    @Operation(summary = "List troop types",
             description = "Returns the nine troops with their housing space, maximum level, attack profile, whether they walk or fly, and whether they attack or support.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -32,7 +32,7 @@ public class TroopTypeController {
                 .toList();
     }
 
-        @Operation(summary = "Read one troop type",
+    @Operation(summary = "Read one troop type",
             description = "Returns a single troop type by its code, for example BARBARIAN or DRAGON. The case does not matter.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),

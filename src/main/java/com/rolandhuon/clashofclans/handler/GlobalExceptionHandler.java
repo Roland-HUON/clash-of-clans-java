@@ -3,6 +3,11 @@ package com.rolandhuon.clashofclans.handler;
 import com.rolandhuon.clashofclans.exceptions.NotFoundException;
 import com.rolandhuon.clashofclans.exceptions.InsufficientResourcesException;
 import com.rolandhuon.clashofclans.dto.ErrorResponse;
+import tools.jackson.databind.exc.MismatchedInputException;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -60,7 +65,33 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse onUnreadableBody(HttpMessageNotReadableException e){
+        if (e.getMostSpecificCause() instanceof MismatchedInputException mismatch) {
+            String field = mismatch.getPath().isEmpty()
+                    ? null
+                    : mismatch.getPath().get(mismatch.getPath().size() - 1).getPropertyName();
+
+            return new ErrorResponse(400, field != null
+                    ? "Field '" + field + "' is missing or has the wrong type."
+                    : "The body does not match this endpoint: every field is required and must have the right type.");
+        }
         return new ErrorResponse(400, "Malformed JSON body.");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorResponse onMethodNotAllowed(HttpRequestMethodNotSupportedException e) {
+        Set<HttpMethod> supported = e.getSupportedHttpMethods();
+        String allowed = (supported == null || supported.isEmpty())
+                ? "none"
+                : supported.stream().map(HttpMethod::name).sorted().collect(Collectors.joining(", "));
+
+        return new ErrorResponse(405, e.getMethod() + " is not supported on this path. Allowed: " + allowed + ".");
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+    public ErrorResponse onUnsupportedMediaType(HttpMediaTypeNotSupportedException e) {
+        return new ErrorResponse(415, "This endpoint reads application/json.");
     }
 
     private static String describe(Exception e, String fallback) {

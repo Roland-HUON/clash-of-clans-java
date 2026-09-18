@@ -25,7 +25,7 @@ public class LeaderboardController {
         this.leaderboardService = leaderboardService;
     }
 
-        @Operation(summary = "Read the leaderboard",
+    @Operation(summary = "Read the leaderboard",
             description = "Returns the players ordered by trophies, then by name. Without a limit it returns the top 10; limit must be between 1 and 100.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -43,7 +43,7 @@ public class LeaderboardController {
         return entries;
     }
 
-        @Operation(summary = "Read one player's rank",
+    @Operation(summary = "Read one player's rank",
             description = "Returns the chief's position in the same ranking, counting from 1.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),

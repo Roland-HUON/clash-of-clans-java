@@ -1,4 +1,4 @@
-import { api, ApiError } from './api.js';
+import { api, ApiError, csrfToken } from './api.js';
 import { VillageScene } from './village.js';
 import { DARK_ELIXIR, ELIXIR, GOLD, RESOURCE_ICON, RESOURCE_LABEL, TROPHY } from './icons.js';
 
@@ -95,7 +95,7 @@ function toast(message, kind = '') {
 function describe(error) {
   if (error instanceof ApiError) {
     if (error.status === 429) return 'Rate limit reached — wait a minute.';
-    return error.message;
+    return error.message || `The server answered ${error.status}.`;
   }
   return error.message || 'Unreachable API';
 }
@@ -111,7 +111,7 @@ scene.onHover = (hit) => {
 
   const building = hit.building;
   const type = state.buildingTypes.get(building.type) || {};
-  const blast = type.splashTargets > 0 ? `, splash +${type.splashTargets}` : '';
+  const blast = type.splashBystanders > 0 ? `, splash +${type.splashBystanders}` : '';
   const reach = type.defensive
     ? `fires at ${String(type.targets).replace('_', ' ').toLowerCase()}${blast}`
     : type.resource ? 'resource building' : type.camp ? 'holds troops' : 'not a defence';
@@ -270,14 +270,21 @@ async function collect() {
   if (state.busy || !state.homeVillage) return;
   state.busy = true;
   try {
+    const before = state.player;
     const harvest = await api.collect(state.homeVillage.id);
-    const total = harvest.gold + harvest.elixir + harvest.darkElixir;
+    await refreshAfterSpending({ village: true });
+
+    const banked = {
+      gold: state.player.gold - before.gold,
+      elixir: state.player.elixir - before.elixir,
+      darkElixir: state.player.darkElixir - before.darkElixir
+    };
+    const total = banked.gold + banked.elixir + banked.darkElixir;
+    const held = harvest.gold + harvest.elixir + harvest.darkElixir;
 
     toast(total === 0
-      ? 'The mines had nothing yet.'
-      : `Collected ${format(harvest.gold)} gold, ${format(harvest.elixir)} elixir, ${format(harvest.darkElixir)} dark elixir`);
-
-    await refreshAfterSpending({ village: true });
+      ? (held === 0 ? 'The mines had nothing yet.' : 'Your storages are full — the mines emptied into nothing.')
+      : `Collected ${format(banked.gold)} gold, ${format(banked.elixir)} elixir, ${format(banked.darkElixir)} dark elixir`);
   } catch (error) {
     toast(describe(error), 'err');
   } finally {
@@ -374,6 +381,7 @@ async function refreshAfterSpending({ troops = false, village = false } = {}) {
 
   renderHud(player, state.rank);
   renderTroops(true);
+  renderArmyPicker();
   if (village && state.homeVillage) await showVillage(state.homeVillage.id, { home: true });
 }
 
@@ -497,6 +505,7 @@ function renderTargetLoot() {
     .map(([icon, value]) => `<li${value === 0 ? ' class="zero"' : ''}>${icon}${format(value)}</li>`)
     .join('');
 
+  el.raidHint.dataset.sticky = empty ? 'true' : 'false';
   el.raidHint.className = 'hint';
   el.raidHint.textContent = empty
     ? 'This village has already been stripped bare — you can still take trophies.'
@@ -551,15 +560,24 @@ function updateCamp() {
   el.campLabel.textContent = `${used} / ${capacity}`;
   el.camp.classList.toggle('over', over);
 
-  el.attackBtn.disabled = state.busy || used === 0 || over || !el.targetSelect.value;
-  el.raidHint.className = 'hint';
-  el.raidHint.textContent = over ? 'Army too large for your camps.' : '';
+  el.attackBtn.disabled = state.busy || !state.homeVillage || used === 0 || over || !el.targetSelect.value;
+
+  if (over) {
+    el.raidHint.className = 'hint err';
+    el.raidHint.textContent = 'Army too large for your camps.';
+  } else if (el.raidHint.dataset.sticky !== 'true') {
+    el.raidHint.className = 'hint';
+    el.raidHint.textContent = '';
+  }
 }
 
 async function attack() {
-  if (state.busy) return;
+  if (state.busy || !state.homeVillage) return;
   state.busy = true;
+
+  const fromVillageId = state.homeVillage.id;
   el.attackBtn.disabled = true;
+  el.raidHint.dataset.sticky = 'false';
   el.raidHint.className = 'hint';
   el.raidHint.textContent = 'Deploying…';
 
@@ -571,7 +589,7 @@ async function attack() {
     const targetVillage = await api.village(targetId);
     const result = await api.raid({
       attackerId: state.player.id,
-      attackerVillageId: state.homeVillage.id,
+      attackerVillageId: fromVillageId,
       targetVillageId: targetId,
       army
     });
@@ -583,6 +601,7 @@ async function attack() {
     await refreshEverything();
     renderTargets();
   } catch (error) {
+    el.raidHint.dataset.sticky = 'true';
     el.raidHint.className = 'hint err';
     el.raidHint.textContent = describe(error);
     toast(describe(error), 'err');
@@ -705,5 +724,7 @@ for (const tab of document.querySelectorAll('.tab')) {
     $('tab-raid').hidden = tab.dataset.tab !== 'raid';
   });
 }
+
+$('logoutCsrf').value = csrfToken() ?? '';
 
 boot();

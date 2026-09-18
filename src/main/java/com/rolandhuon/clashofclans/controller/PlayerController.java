@@ -25,7 +25,7 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
-        @Operation(summary = "Create a player",
+    @Operation(summary = "Create a player",
             description = "Registers a new chief with a starting purse. The name must not be blank and every amount must be zero or more.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "The player was created and is returned with its generated id."),
@@ -38,7 +38,7 @@ public class PlayerController {
         return PlayerDto.from(playerService.create(request));
     }
 
-        @Operation(summary = "List players",
+    @Operation(summary = "List players",
             description = "Returns every player ordered by id. Pass name to filter on an exact name instead.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -55,7 +55,7 @@ public class PlayerController {
                 .toList();
     }
 
-        @Operation(summary = "Read one player",
+    @Operation(summary = "Read one player",
             description = "Returns a single chief with the balance of the three currencies and the trophy count.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -67,7 +67,7 @@ public class PlayerController {
         return PlayerDto.from(playerService.findById(id));
     }
 
-        @Operation(summary = "Replace a player",
+    @Operation(summary = "Replace a player",
             description = "Overwrites the name, level and the three balances. The villages and troops are left untouched.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -80,7 +80,7 @@ public class PlayerController {
         return PlayerDto.from(playerService.update(id, request));
     }
 
-        @Operation(summary = "Delete a player",
+    @Operation(summary = "Delete a player",
             description = "Removes the chief along with the villages, buildings and troops that belong to them.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "The player was deleted; nothing is returned."),

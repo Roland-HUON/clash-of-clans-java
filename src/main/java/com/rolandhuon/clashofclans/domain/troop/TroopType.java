@@ -117,6 +117,9 @@ public enum TroopType implements EntityType {
     ));
 
     private final String label;
+    public static final int MAX_ARMY_SIZE = 352;
+    public static final int MAX_ARMY_ENTRIES = 20;
+
     private final int housingSpace;
     private final ResourceType upgradeResource;
     private final TargetingMode targetingMode;

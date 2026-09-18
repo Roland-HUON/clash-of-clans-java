@@ -1,8 +1,23 @@
 {
   "info": {
     "name": "Clash of Clans API",
-    "description": "Clash of Clans game engine exposed over REST.\n\nVariables: baseUrl, playerId, villageId, buildingId, troopId.\nStart the application, then run the Catalog folder to check everything responds.\n\nRequires Docker Desktop running (PostgreSQL).",
+    "description": "Every request is safe to replay. The collection builds its own sandbox - an attacking chief with a village, a mine and a camp, plus a second chief whose village is the raid target - does every mutation there, and deletes both in the final Cleanup folder. No seeded player or village is ever changed.\n\nVariables it drives itself: sandboxPlayerId, sandboxVillageId, sandboxBuildingId, sandboxTroopId, victimPlayerId, victimVillageId. playerId and villageId point at the seeded chief Roland for the read-only requests. The API is protected by Spring Security, so the collection sends HTTP Basic credentials on every request - the {{username}} and {{password}} variables default to admin/admin, the only chief allowed to delete. Basic requests are exempt from CSRF, so no token is needed here.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{username}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
     {
@@ -34,8 +49,20 @@
       "value": ""
     },
     {
-      "key": "targetVillageId",
-      "value": "2"
+      "key": "victimPlayerId",
+      "value": ""
+    },
+    {
+      "key": "victimVillageId",
+      "value": ""
+    },
+    {
+      "key": "username",
+      "value": "admin"
+    },
+    {
+      "key": "password",
+      "value": "admin"
     }
   ],
   "item": [
@@ -60,7 +87,18 @@
             },
             "description": "Static catalog, compiled into the TroopType enum."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get one troop type",
@@ -80,7 +118,18 @@
             },
             "description": "404 when the type does not exist. Case insensitive."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "List building types",
@@ -99,7 +148,18 @@
             },
             "description": ""
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get one building type",
@@ -119,7 +179,18 @@
             },
             "description": ""
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -144,7 +215,18 @@
             },
             "description": ""
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Search by name",
@@ -169,7 +251,18 @@
             },
             "description": "Collection filter: no match returns 200 with an empty array, not 404."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get a player",
@@ -189,7 +282,18 @@
             },
             "description": "404 when the id does not exist, 400 when the id is not a number."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Create a player",
@@ -224,6 +328,15 @@
           },
           "response": [],
           "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -267,7 +380,18 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -291,7 +415,18 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "List a player villages",
@@ -314,6 +449,15 @@
           },
           "response": [],
           "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -366,6 +510,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
                   "pm.collectionVariables.set('sandboxVillageId', pm.response.json().id);"
                 ]
               }
@@ -392,6 +545,15 @@
           },
           "response": [],
           "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -447,6 +609,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
                   "pm.collectionVariables.set('sandboxBuildingId', pm.response.json().id);"
                 ]
               }
@@ -486,7 +657,18 @@
             },
             "description": "The sandbox needs housing space before it can send an army."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Collect the mines",
@@ -506,7 +688,18 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -540,6 +733,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
                   "const cheapest = pm.response.json()",
                   "    .filter((t) => t.level < t.maxLevel)",
                   "    .sort((a, b) => a.nextUpgradeCost - b.nextUpgradeCost)[0];",
@@ -568,7 +770,18 @@
             },
             "description": "Spends the currency of the type: gold, elixir or dark elixir. 409 when the balance is too low."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Upgrade a troop",
@@ -587,9 +800,20 @@
                 "upgrade"
               ]
             },
-            "description": "Spends elixir. 400 when the max level is reached."
+            "description": "Spends whatever the chosen troop's own type declares - the script above picks the cheapest upgrade available, which is often the Hog Rider and therefore dark elixir."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -597,6 +821,143 @@
       "name": "5. Raids",
       "description": "Attack a persisted village. Reuses the battle engine without modifying it.",
       "item": [
+        {
+          "name": "Found a target chief",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/players",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Victim\",\n  \"level\": 1,\n  \"gold\": 40000,\n  \"elixir\": 30000,\n  \"darkElixir\": 800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "The raid below attacks this chief, never a seeded one."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('victimPlayerId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Give the target a village",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{victimPlayerId}}/villages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{victimPlayerId}}",
+                "villages"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Victim Field\",\n  \"gold\": 40000,\n  \"elixir\": 30000,\n  \"darkElixir\": 800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('victimVillageId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Give the target something to defend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CANNON\",\n  \"level\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{victimVillageId}}/buildings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{victimVillageId}}",
+                "buildings"
+              ]
+            },
+            "description": "A village with no building cannot be raided."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
         {
           "name": "Launch a raid",
           "request": {
@@ -617,10 +978,10 @@
                 "raids"
               ]
             },
-            "description": "The sandbox chief attacks a seeded village. This is the one request that changes seeded data - it moves loot and trophies, exactly as playing the game would.",
+            "description": "Both sides belong to this collection, so a seeded chief can never lose loot or trophies.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"attackerId\": {{sandboxPlayerId}},\n  \"attackerVillageId\": {{sandboxVillageId}},\n  \"targetVillageId\": {{targetVillageId}},\n  \"army\": [\n    {\n      \"type\": \"BARBARIAN\",\n      \"count\": 15\n    }\n  ]\n}",
+              "raw": "{\n  \"attackerId\": {{sandboxPlayerId}},\n  \"attackerVillageId\": {{sandboxVillageId}},\n  \"targetVillageId\": {{victimVillageId}},\n  \"army\": [\n    {\n      \"type\": \"BARBARIAN\",\n      \"count\": 15\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -628,7 +989,18 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -667,7 +1039,18 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Battle history",
@@ -686,7 +1069,18 @@
             },
             "description": ""
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -717,7 +1111,18 @@
             },
             "description": "Sorted by trophies descending. limit between 1 and 100, defaults to 10."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Rank of a player",
@@ -738,7 +1143,18 @@
             },
             "description": ""
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -760,10 +1176,20 @@
                 "villages",
                 "{{sandboxVillageId}}"
               ]
-            },
-            "description": "Removes the village this collection created."
+            }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Delete the sandbox chief",
@@ -780,10 +1206,80 @@
                 "players",
                 "{{sandboxPlayerId}}"
               ]
-            },
-            "description": "Removes the chief this collection created, with the troops that came with them."
+            }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete the target village",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{victimVillageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{victimVillageId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete the target chief",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{victimPlayerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{victimPlayerId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

@@ -5,9 +5,15 @@ import com.rolandhuon.clashofclans.domain.building.Production;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -104,24 +110,47 @@ class VillageBuildingProductionTest {
             assertThat(mine.collect(after(Duration.ofHours(2)))).isEqualTo(rate);
         }
 
-        @Test
-        @DisplayName("Collecting constantly earns exactly as much as collecting once.")
-        void collectingTooOftenLosesNothing() {
-            int rate = BuildingType.GOLD_MINE.productionPerHourAt(1);
+        @ParameterizedTest
+        @MethodSource("com.rolandhuon.clashofclans.model.VillageBuildingProductionTest#everyProducerAndLevel")
+        @DisplayName("Collecting once a second earns exactly as much as collecting once an hour.")
+        void dripPaysTheSameAsLump(BuildingType type, int level) {
+            int rate = type.productionPerHourAt(level);
 
-            VillageBuilding impatient = mine(1);
+            VillageBuilding impatient = new VillageBuilding(type, level, BUILT_AT);
             int piecemeal = 0;
             for (int second = 1; second <= 3600; second++) {
                 piecemeal += impatient.collect(after(Duration.ofSeconds(second)));
             }
 
-            VillageBuilding patient = mine(1);
+            VillageBuilding patient = new VillageBuilding(type, level, BUILT_AT);
             int inOneGo = patient.collect(after(Duration.ofHours(1)));
 
-            assertThat(inOneGo).isEqualTo(rate);
+            assertThat(inOneGo)
+                    .as("%s level %d pays its hourly rate in one go", type.label(), level)
+                    .isEqualTo(rate);
             assertThat(piecemeal)
-                    .as("3600 collections over an hour pay the same hour")
+                    .as("%s level %d at %d/h: 3600 collections paid %d, one collection paid %d",
+                            type.label(), level, rate, piecemeal, inOneGo)
                     .isEqualTo(inOneGo);
+        }
+
+        @ParameterizedTest
+        @MethodSource("com.rolandhuon.clashofclans.model.VillageBuildingProductionTest#everyProducerAndLevel")
+        @DisplayName("No polling frequency ever beats simply waiting.")
+        void noPollingFrequencyBeatsWaiting(BuildingType type, int level) {
+            int reference = new VillageBuilding(type, level, BUILT_AT).collect(after(Duration.ofHours(1)));
+
+            for (int period : new int[]{1, 2, 3, 5, 7, 13, 60, 137}) {
+                VillageBuilding producer = new VillageBuilding(type, level, BUILT_AT);
+                int polled = 0;
+                for (int second = period; second <= 3600; second += period) {
+                    polled += producer.collect(after(Duration.ofSeconds(second)));
+                }
+                assertThat(polled)
+                        .as("%s level %d polled every %ds paid %d, waiting pays %d",
+                                type.label(), level, period, polled, reference)
+                        .isLessThanOrEqualTo(reference);
+            }
         }
 
         @Test
@@ -176,5 +205,12 @@ class VillageBuildingProductionTest {
             assertThat(mine.pendingProduction(after(Duration.ofHours(1))))
                     .isEqualTo(BuildingType.GOLD_MINE.productionPerHourAt(1));
         }
+    }
+
+    static Stream<Arguments> everyProducerAndLevel() {
+        return Arrays.stream(BuildingType.values())
+                .filter(BuildingType::produces)
+                .flatMap(type -> IntStream.rangeClosed(1, type.maxLevel())
+                        .mapToObj(level -> Arguments.of(type, level)));
     }
 }

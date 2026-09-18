@@ -117,6 +117,15 @@ public class RaidService {
             throw new IllegalStateException("Village " + base.getId() + " has no military camp to host an army.");
         }
 
+        int used = 0;
+        for (RaidUnitRequest unit : spec) {
+            used += TroopType.from(unit.type()).housingSpace() * unit.count();
+        }
+        if (used > capacity) {
+            throw new IllegalArgumentException(
+                    "Army too large: " + used + " housing space used, " + capacity + " available.");
+        }
+
         List<Troop> army = new ArrayList<>();
         for (RaidUnitRequest unit : spec) {
             TroopType type = TroopType.from(unit.type());
@@ -126,12 +135,6 @@ public class RaidService {
                             "Player " + attacker.getId() + " has not unlocked " + type.label()));
 
             army.addAll(troopFactory.create(type, researched.getLevel(), unit.count()));
-        }
-
-        int used = army.stream().mapToInt(Troop::getHousingSpace).sum();
-        if (used > capacity) {
-            throw new IllegalArgumentException(
-                    "Army too large: " + used + " housing space used, " + capacity + " available.");
         }
 
         return army;

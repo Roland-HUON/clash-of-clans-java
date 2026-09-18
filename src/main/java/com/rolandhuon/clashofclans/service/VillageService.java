@@ -73,11 +73,11 @@ public class VillageService {
                 .orElseThrow(() -> new NotFoundException("Village", villageId));
 
         BuildingType type = BuildingType.from(request.type());
+        VillageBuilding building = new VillageBuilding(type, request.level(), clock.instant());
+
         if (!village.hasRoomFor(type)) {
             throw new IllegalStateException("Too many " + type.label() + " (max " + type.maxCount() + ")");
         }
-
-        VillageBuilding building = new VillageBuilding(type, request.level(), clock.instant());
         payForBuilding(village.getPlayer(), type, request.level());
         village.addBuilding(building);
 

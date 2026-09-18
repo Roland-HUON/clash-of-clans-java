@@ -4,7 +4,7 @@ import com.rolandhuon.clashofclans.domain.building.BuildingType;
 
 public record BuildingTypeDto(String id, String label, int maxCount, int maxLevel,
                               boolean defensive, boolean resource, boolean camp,
-                              String targets, String targeting, String attackType, int splashTargets,
+                              String targets, String targeting, String attackType, int splashBystanders,
                               String upgradeResource, int buildCost) {
 
     public static BuildingTypeDto from(BuildingType type){

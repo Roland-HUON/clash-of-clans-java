@@ -24,7 +24,7 @@ public class RaidController {
         this.raidService = raidService;
     }
 
-        @Operation(summary = "Raid a village",
+    @Operation(summary = "Raid a village",
             description = "Sends an army from your village against another player's village. The defences fire back every turn, the loot taken is the destruction percentage applied to the defender's stock, and trophies change hands according to the stars. The army may not exceed the housing space of your military camps, and every troop type must already be unlocked.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The raid was resolved; the result carries the stars, the loot and the trophy swing."),

@@ -79,6 +79,8 @@ button:disabled { cursor: not-allowed; }
 .hud-res .ico { width: 21px; height: 21px; filter: drop-shadow(0 1px 0 #00000055); }
 
 .chief { display: flex; align-items: center; gap: 8px; color: #f0d7a8; font-weight: 800; font-size: 13px; }
+.signout { margin: 0; }
+.signout .btn { padding: 5px 12px; font-size: 12px; }
 .status { font-size: 11px; padding: 3px 9px; border-radius: 999px; background: #00000045; }
 .status.ok { color: #b9f6a5; }
 .status.err { color: #ffb3ad; }

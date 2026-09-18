@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/building-types")
 public class BuildingTypeController {
-        @Operation(summary = "List building types",
+    @Operation(summary = "List building types",
             description = "Returns the twenty-one buildings with their maximum count and level, their build cost and currency, whether they are a defence, a resource building or a camp, and what a defence is allowed to shoot at.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -32,7 +32,7 @@ public class BuildingTypeController {
                 .toList();
     }
 
-        @Operation(summary = "Read one building type",
+    @Operation(summary = "Read one building type",
             description = "Returns a single building type by its code, for example CANNON or AIR_DEFENSE. The case does not matter.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),

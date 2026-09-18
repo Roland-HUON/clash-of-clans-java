@@ -29,7 +29,7 @@ public class VillageController {
         this.productionService = productionService;
     }
 
-        @Operation(summary = "List every village",
+    @Operation(summary = "List every village",
             description = "Returns every village on the server, ordered by id, each with its buildings and its stock of lootable resources. This is what a client uses to pick a raid target without asking for each chief in turn.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -56,7 +56,7 @@ public class VillageController {
                 .toList();
     }
 
-        @Operation(summary = "Found a village",
+    @Operation(summary = "Found a village",
             description = "Creates an empty village for that chief, with the starting resources given in the body.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "The village was created and is returned with its generated id."),
@@ -70,7 +70,7 @@ public class VillageController {
         return VillageDto.from(villageService.create(playerId, request));
     }
 
-        @Operation(summary = "Read one village",
+    @Operation(summary = "Read one village",
             description = "Returns the village with every building: its level, hit points, camp capacity and the cost of its next upgrade.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -83,7 +83,7 @@ public class VillageController {
         return VillageDto.from(village, productionService.pending(village));
     }
 
-        @Operation(summary = "Raze a village",
+    @Operation(summary = "Raze a village",
             description = "Deletes the village and every building in it. The owner keeps their resources.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "The village was deleted; nothing is returned."),
@@ -96,7 +96,7 @@ public class VillageController {
         villageService.delete(id);
     }
 
-        @Operation(summary = "Collect the mines",
+    @Operation(summary = "Collect the mines",
             description = "Empties every producer in the village - Gold Mine, Elixir Collector and Dark Elixir Drill - of what it has made since the last collection. The amount lands both in the owner's purse, where it can be spent, and in the village's stock, where raiders can reach it. A producer stops filling once it holds six hours of its own output.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The mines were emptied; what was collected is returned."),

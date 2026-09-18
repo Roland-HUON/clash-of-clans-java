@@ -1,6 +1,6 @@
 # Clash of Clans - Java
 
-A Clash of Clans game engine written in Java 21 and exposed over a REST API.
+A Clash of Clans game engine written in Java 21 on Spring Boot 4.1.1, exposed over a REST API.
 
 Players own villages, villages hold buildings, buildings and troops are upgraded
 with three different currencies, and players raid each other for loot and trophies.
@@ -10,7 +10,7 @@ with three different currencies, and players raid each other for loot and trophi
 - **JDK 21**, on your `PATH` or as `JAVA_HOME`. The Maven wrapper downloads Maven,
   not a JDK: `.mvn/wrapper/maven-wrapper.properties` is `distributionType=only-script`
   and the build declares no toolchain, so `./mvnw` needs a Java 21 already installed.
-- **Docker Desktop**, running. It hosts PostgreSQL.
+- **Docker Desktop**, running. It hosts PostgreSQL 17.
 
 Maven itself you do not need: `./mvnw` fetches it on first use.
 
@@ -52,7 +52,7 @@ The first build downloads a JDK image and the dependencies, so allow a few minut
 | http://localhost:8080/ | the 3D village viewer |
 | http://localhost:8080/swagger-ui/index.html | interactive API documentation, every endpoint described |
 | http://localhost:8080/v3/api-docs | the OpenAPI specification |
-| http://localhost:8080/api/troop-types | a quick check that it answers |
+| http://localhost:8080/api/troop-types | a quick check that it answers (needs credentials) |
 
 Two endpoints worth knowing that the panels above do not surface: `GET /api/battles`
 returns every battle recorded so far, oldest first, each tagged `SIMULATION` or
@@ -60,16 +60,19 @@ returns every battle recorded so far, oldest first, each tagged `SIMULATION` or
 `GET /api/players?name=Roland` filters players on an exact name. `GET /api/leaderboard`
 returns the top **10** unless you pass `?limit=`, which must be between 1 and 100.
 
-Import `postman/clash-of-clans.postman_collection.json` into Postman: 26 requests
+Import `postman/clash-of-clans.postman_collection.json` into Postman: 31 requests
 covering all 24 endpoints, grouped by topic, meant to be **run top to bottom and as
-often as you like**. It builds its own sandbox — a throwaway chief, their village, a
-gold mine and a camp — does every mutation there, and deletes it again in the final
-`8. Cleanup` folder. Running it five times in a row leaves the fifty seeded players
-and villages exactly as they were.
+often as you like**. Every request asserts its own status code, so a red run is
+actually red.
 
-The one request that touches seeded data is the raid: the sandbox chief attacks a
-seeded village, which moves loot and trophies, exactly as playing the game would. The
-trophy exchange is zero-sum, so even the table total comes back unchanged.
+The collection signs every request with HTTP Basic, from the `username` and
+`password` variables — `admin` / `admin`, since the `8. Cleanup` folder deletes.
+
+It touches no seeded data at all. It founds two throwaway chiefs — an attacker with a
+village, a mine and a camp, and a victim with a village and a cannon — performs every
+mutation on those, raids one with the other, and deletes all four in the final
+`8. Cleanup` folder. Five consecutive runs leave the player count, the village count,
+the trophy total and the total village stock byte for byte identical.
 
 A chief created through `POST /api/players` starts with every troop type unlocked at
 level one, so a new account can raid immediately and grow from the laboratory.
@@ -81,6 +84,50 @@ table runs down to 20 trophies. A chief's village is equipped from a tier derive
 from their trophies, so a base near the top of the table is visibly tougher than one
 at the bottom. The seed is idempotent: it does nothing if players already exist.
 
+## Signing in
+
+Everything is behind **Spring Security**, so the first page you get is a login
+screen. Two chiefs ship with the application:
+
+| Chief | Password | May do |
+| --- | --- | --- |
+| `user` | `password` | everything except deleting |
+| `admin` | `admin` | everything, deleting included |
+
+They live in an `InMemoryUserDetailsManager` in
+`config/WebSecurityConfig.java`, with BCrypt-hashed passwords. There is no sign-up:
+this is a school project, not a service, and a fixed pair of accounts keeps the
+demo reproducible.
+
+The same chain answers two kinds of client, and the difference matters:
+
+- **A browser** is redirected to `/login.html`, a form styled like the rest of the
+  game. Signing in leaves a session cookie; **Sign out** in the top bar ends it.
+- **An API client** (`curl`, Postman, the fetch calls in the front end) gets a bare
+  `401` on `/api/**` rather than a redirect, because a `302` to an HTML login page
+  is useless to a program. HTTP Basic works everywhere:
+
+```bash
+curl -u user:password http://localhost:8080/api/players
+```
+
+Authorisation is one rule: **`DELETE /api/**` requires the `ADMIN` role**, everything
+else only requires being signed in. A signed-in `user` who tries to delete gets
+`403`, not `401` — they are known, just not allowed.
+
+CSRF protection is on. The token is published in a readable `XSRF-TOKEN` cookie; the
+front end echoes it back in `X-XSRF-TOKEN` on every write, and the login page copies
+it into a hidden `_csrf` field.
+
+A request is exempt from the token only when it carries an `Authorization: Basic`
+header **and presents no live session**: it brings its own credentials and relies on no
+cookie, so there is nothing for a third-party site to ride on. Testing the header alone
+would not be enough. Spring Security skips re-authenticating a Basic header whose
+username matches the session it already trusts, so a request bolting a
+`Basic user:anything` header onto a stolen session cookie would have switched CSRF off
+and then been waved through on the cookie. `WebSecurityConfigTest` pins that case at
+`403`.
+
 ## The 3D front end
 
 `http://localhost:8080/` serves a three.js village built entirely from the API.
@@ -90,7 +137,7 @@ framework, no package manager: three.js comes from a CDN through an import map.
 ```
 static/index.html      the shell
 static/css/app.css     the Clash of Clans look
-static/js/api.js       one function per endpoint
+static/js/api.js       a thin wrapper per endpoint the viewer actually calls
 static/js/icons.js     the gold, elixir, dark elixir and trophy icons, drawn as SVG
 static/js/meshes.js    a low-poly mesh per building and troop type
 static/js/village.js   the scene, the ring layout, the animation loop
@@ -140,6 +187,7 @@ currency, and the loot taken from such a stock is computed without overflowing:
 
 ```java
 private static long share(long stock, int percentage) {
+    if (stock < 0) throw new IllegalArgumentException("Stock must be >= 0, was " + stock);
     return stock / 100 * percentage + stock % 100 * percentage / 100;
 }
 ```
@@ -151,7 +199,7 @@ limit.
 | Currency | Pays for |
 | --- | --- |
 | `GOLD` | every defence except the Monolith, plus the Elixir Collector and Elixir Storage |
-| `ELIXIR` | troops, the laboratory, the camps, the spell factory, the Gold Mine and Gold Storage, and both dark elixir buildings |
+| `ELIXIR` | every troop except the Hog Rider, the laboratory, the camps, the spell factory, the Gold Mine and Gold Storage, and both dark elixir buildings |
 | `DARK_ELIXIR` | the Monolith, the Hero Hall, the Pet House and the Hog Rider |
 
 Note that what a building is paid for and what it produces are two different things:
@@ -195,9 +243,12 @@ A producer stops once it holds **six hours** of its own output, so a village lef
 alone for a month is worth no more than one left alone for an evening.
 
 Collecting advances that producer's clock by exactly the time the payout was worth,
-down to the second: `secondsPaidFor = amount * 3600 / ratePerHour`. Nothing is paid
-twice and nothing is thrown away — a test collects once a second for a full hour and
-asserts the total equals a single collection of that same hour.
+**to the nanosecond**: `nanosPaidFor = amount * 3_600_000_000_000 / ratePerHour`.
+Seconds were not fine enough — at 1 300 an hour, one unit is worth 2.769 s, and
+charging a whole 2 s handed back 38 % of the production to anyone polling `/collect`.
+A test now walks **every producer at every level** and asserts that collecting once a
+second for an hour pays exactly what collecting once after that hour pays, and a second
+test asserts that no polling period ever beats simply waiting.
 
 The three storages are not decoration: **once a village owns at least one storage for a
 currency**, it can hold no more of that currency than those storages allow, and a
@@ -212,6 +263,14 @@ the village's **stock**, which is what raiders can take. Those are two views of 
 same storages in this model, with one simplification worth knowing: a raid empties the
 stock without touching the purse, so being raided costs you loot but never costs you
 an upgrade you had already saved for.
+
+**Upgrading a producer collects it first.** The buffer holds an amount, not a duration,
+and `pendingProduction` prices the whole elapsed period at the building's *current*
+rate — so raising the level without emptying the mine would re-price hours already
+earned at the new, higher rate and mint the difference out of nothing. A Gold Mine 5
+to 6 sitting on a full buffer was worth 3 000 gold that way. `UpgradeService` banks the
+buffer at the old rate before it touches the level, which costs the player nothing:
+the production is theirs either way, it just gets paid at the rate it was produced at.
 
 The clock is a `Clock` bean rather than a call to `Instant.now()` scattered around, so
 `VillageBuildingProductionTest` can prove the six-hour cap without sleeping.
@@ -298,6 +357,22 @@ starts the PostgreSQL container, so Docker must be running. To skip it:
 ./mvnw test -Dtest='!ClashOfClansApplicationTests'
 ```
 
+`tools/audit-docs.py` confronts this README with the running application: it checks
+every URL in the tables above, the sign-in rules, the package listing both ways, the
+Postman request count, the number of endpoints Swagger publishes, the house style
+(no comments, no `System.out`, no `Instant.now()` outside the clock), and every defect
+a review has already found once, so none of them can come back quietly. Start the
+application, then:
+
+```bash
+python tools/audit-docs.py
+```
+
+It exits non-zero on any claim the code no longer supports, so documentation that
+drifts out of date fails like a test. It leaves the data alone apart from one simulated
+battle, which it has to run to prove the army limits and which lands in the history
+like any other.
+
 ## Configuration
 
 `src/main/resources/application.yaml`
@@ -342,10 +417,21 @@ API.
 Swagger UI and the OpenAPI document are not under `/api`, so they are never throttled.
 
 Input is validated before the controller body runs: `@Valid` on the request bodies,
-`@NotBlank` / `@Min` / `@PositiveOrZero` / `@NotEmpty` on their fields.
+`@NotBlank` / `@Min` / `@Max` / `@PositiveOrZero` / `@NotEmpty` / `@Size` on their
+fields.
+
+**Army sizes are bounded, and bounded before anything is allocated.** `count` is an
+`int`, so `{"type":"BARBARIAN","count":2000000000}` used to be a ninety-byte request
+that asked the server to build two billion objects — `POST /api/battles` did it before
+fighting, and `POST /api/raids` did it before checking that the camps could host them.
+Both now cap `count` at `TroopType.MAX_ARMY_SIZE` and the army list at
+`MAX_ARMY_ENTRIES`, `TroopFactory` refuses anything larger on its own account, and
+`RaidService` adds the housing space up from the request before creating a single
+troop. `MAX_ARMY_SIZE` is not a guess: it is the largest army the game can host, four
+camps at their maximum level, and `TroopFactoryTest` fails if the building tables ever
+move away from it.
 `GlobalExceptionHandler` turns the failures below into the same JSON shape
-`{"status":.., "message":..}`. Anything it does not handle — an unknown route, a
-wrong HTTP method, an unsupported media type — still answers with Spring's own
+`{"status":.., "message":..}`. An unknown route is the one case left to Spring's own
 default body, which carries `error` instead of `message`:
 
 | Exception | Status |
@@ -353,6 +439,8 @@ default body, which carries `error` instead of `message`:
 | `MethodArgumentNotValidException`, `IllegalArgumentException`, `IllegalStateException` | `400` |
 | `MethodArgumentTypeMismatchException`, `HttpMessageNotReadableException` | `400` |
 | `NotFoundException` | `404` |
+| `HttpRequestMethodNotSupportedException` | `405` |
+| `HttpMediaTypeNotSupportedException` | `415` |
 | `InsufficientResourcesException` | `409` |
 
 ## Trophies
@@ -388,15 +476,16 @@ longer prints hundreds of lines from inside the transaction. Turn it on with
 
 ```
 domain/      pure game model - no Spring, no JPA
+             (battle, building, common, entity, troop, village)
 model/       JPA entities - the persistence shape of the data
 repository/  Spring Data interfaces
-service/     game rules and orchestration
+service/     game rules and orchestration (targeting holds the strategy beans)
 controller/  REST endpoints
 dto/         what the API exposes, kept separate from the domain
 exceptions/  the exceptions the services raise
 handler/     turns those exceptions into HTTP statuses
 web/         servlet filters - rate limiting
-config/      beans and typed configuration properties
+config/      beans, typed configuration properties, the Spring Security chain
 app/         CLI runner, data seeder, event listeners
 ```
 

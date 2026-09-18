@@ -38,7 +38,7 @@ public class BattleController {
         this.battleHistoryService = battleHistoryService;
     }
 
-        @Operation(summary = "Simulate a battle",
+    @Operation(summary = "Simulate a battle",
             description = "Runs one battle between an army and a village built from the body alone. Nothing is charged, no loot is taken and no trophy changes hands; only the outcome is kept in the history.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The battle was resolved."),
@@ -66,7 +66,7 @@ public class BattleController {
         return BattleResultDto.from(result);
     }
 
-        @Operation(summary = "List past battles",
+    @Operation(summary = "List past battles",
             description = "Returns every battle recorded so far, oldest first, each one tagged SIMULATION or RAID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),

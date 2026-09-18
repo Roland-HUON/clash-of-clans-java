@@ -1,6 +1,7 @@
 package com.rolandhuon.clashofclans.model;
 
 import com.rolandhuon.clashofclans.domain.building.BuildingType;
+import com.rolandhuon.clashofclans.domain.building.Production;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -16,11 +17,13 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class VillageBuilding {
 
+    private static final long NANOS_PER_HOUR = 3_600_000_000_000L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-        @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     private BuildingType type;
 
     private int level;
@@ -45,10 +48,13 @@ public class VillageBuilding {
     public int pendingProduction(Instant now) {
         if (!type.produces() || lastCollectedAt == null) return 0;
 
-        long seconds = Duration.between(lastCollectedAt, now).toSeconds();
-        if (seconds <= 0) return 0;
+        Duration elapsed = Duration.between(lastCollectedAt, now);
+        if (elapsed.isNegative() || elapsed.isZero()) return 0;
 
-        long produced = (long) type.productionPerHourAt(level) * seconds / 3600;
+        Duration full = Duration.ofHours(Production.STORAGE_HOURS);
+        if (elapsed.compareTo(full) > 0) elapsed = full;
+
+        long produced = (long) type.productionPerHourAt(level) * elapsed.toNanos() / NANOS_PER_HOUR;
         return (int) Math.min(produced, type.mineCapacityAt(level));
     }
 
@@ -59,8 +65,8 @@ public class VillageBuilding {
         if (amount >= type.mineCapacityAt(level)) {
             lastCollectedAt = now;
         } else {
-            long secondsPaidFor = (long) amount * 3600 / type.productionPerHourAt(level);
-            lastCollectedAt = lastCollectedAt.plusSeconds(secondsPaidFor);
+            long nanosPaidFor = (long) amount * NANOS_PER_HOUR / type.productionPerHourAt(level);
+            lastCollectedAt = lastCollectedAt.plusNanos(nanosPaidFor);
         }
         return amount;
     }

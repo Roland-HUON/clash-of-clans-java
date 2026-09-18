@@ -24,7 +24,7 @@ public class UpgradeController {
         this.playerService = playerService;
     }
 
-        @Operation(summary = "List a player's troops",
+    @Operation(summary = "List a player's troops",
             description = "Returns every troop type the chief has unlocked, with its level, hit points, damage and the cost of its next upgrade.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
@@ -38,7 +38,7 @@ public class UpgradeController {
                 .toList();
     }
 
-        @Operation(summary = "Upgrade a building",
+    @Operation(summary = "Upgrade a building",
             description = "Raises the building by one level and charges the owner in that building's own currency: each building is charged in the currency its own type declares, which is not always the one it produces - a Gold Mine is paid for in elixir, an Elixir Collector in gold.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The building went up a level and is returned with its new stats."),
@@ -52,7 +52,7 @@ public class UpgradeController {
         return VillageBuildingDto.from(upgradeService.upgradeBuilding(id));
     }
 
-        @Operation(summary = "Upgrade a troop",
+    @Operation(summary = "Upgrade a troop",
             description = "Raises the troop by one level and charges the owner. Every raid from now on uses the new level.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The troop went up a level and is returned with its new stats."),

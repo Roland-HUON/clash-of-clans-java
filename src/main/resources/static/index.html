@@ -43,6 +43,10 @@
     <label for="playerSelect">Chief</label>
     <select id="playerSelect"></select>
     <span id="status" class="status">connecting…</span>
+    <form class="signout" method="post" action="logout">
+      <input type="hidden" id="logoutCsrf" name="_csrf">
+      <button type="submit" class="btn btn-wood">Sign out</button>
+    </form>
   </div>
 </header>
 
