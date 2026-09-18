@@ -183,6 +183,36 @@ const BUILDERS = {
     group.add(box(1.5, 0.18, 0.3, PALETTE.wood, 0.55));
   },
 
+  DARK_ELIXIR_DRILL(group) {
+    group.add(plinth(2.0, PALETTE.monolith));
+    group.add(cylinder(0.72, 0.9, 0.5, 0x3b2a55, 0.2));
+    const shaft = cylinder(0.16, 0.16, 1.3, 0x6f767c, 0.6);
+    group.add(shaft);
+    const drop = sphere(0.26, PALETTE.darkElixir, 1.75);
+    drop.material.emissive = new THREE.Color(PALETTE.darkElixir);
+    drop.material.emissiveIntensity = 0.55;
+    group.add(drop);
+    group.userData.spin = shaft;
+    for (const side of [-1, 1]) {
+      const leg = box(0.16, 0.9, 0.16, PALETTE.woodDark, 0.2);
+      leg.position.set(side * 0.62, leg.position.y, 0);
+      group.add(leg);
+    }
+  },
+
+  DARK_ELIXIR_STORAGE(group) {
+    group.add(plinth(2.2, PALETTE.monolith));
+    group.add(cylinder(0.7, 0.8, 1.5, 0x3b2a55, 0.2));
+    for (const y of [0.5, 1.1]) {
+      const band = cylinder(0.76, 0.76, 0.12, 0x6f767c, y);
+      group.add(band);
+    }
+    const fluid = cylinder(0.62, 0.62, 0.3, PALETTE.darkElixir, 1.55);
+    fluid.material.emissive = new THREE.Color(PALETTE.darkElixir);
+    fluid.material.emissiveIntensity = 0.5;
+    group.add(fluid);
+  },
+
   GOLD_STORAGE(group) {
     group.add(plinth(2.1, PALETTE.stoneDark));
     group.add(box(1.25, 1.1, 1.25, PALETTE.wood, 0.2));
@@ -299,13 +329,18 @@ const TROOP_COLORS = {
 export function createTroop(type, movement) {
   const group = new THREE.Group();
   const color = TROOP_COLORS[type] || 0xdddddd;
-  const big = type === 'GIANT' || type === 'DRAGON';
-  const radius = big ? 0.3 : 0.2;
+  const radius = type === 'GIANT' ? 0.3 : 0.2;
+
+  const walker = (r, bodyColor) => {
+    group.add(cylinder(r * 0.8, r, r * 2.4, bodyColor, 0));
+    group.add(sphere(r * 0.9, bodyColor, r * 2.4));
+    return r * 2.4 + r * 1.8;
+  };
 
   if (type === 'BALLOON') {
     group.add(sphere(0.3, color, 0.25));
-    const basket = box(0.26, 0.2, 0.26, PALETTE.wood, 0.1);
-    group.add(basket);
+    group.add(box(0.26, 0.2, 0.26, PALETTE.wood, 0.1));
+
   } else if (type === 'DRAGON') {
     const body = cylinder(0.2, 0.3, 0.8, color, 0.1);
     body.rotation.z = Math.PI / 2;
@@ -319,18 +354,61 @@ export function createTroop(type, movement) {
       group.userData.wings.push(wing);
     }
     group.add(sphere(0.18, color, 0.5));
+
   } else if (type === 'HEALER') {
     group.add(sphere(0.24, color, 0.2));
     const halo = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.05, 8, 16), mat(0xfff0a0));
     halo.rotation.x = Math.PI / 2;
     halo.position.y = 0.78;
     group.add(halo);
+
+  } else if (type === 'BARBARIAN') {
+    const head = walker(radius, color);
+    group.add(cone(radius * 0.95, 0.16, 0xc9922f, head - 0.1, 8));
+    const sword = box(0.05, 0.5, 0.11, 0xc9ccd1, 0.3);
+    sword.position.set(0.26, sword.position.y, 0);
+    sword.rotation.z = -0.3;
+    group.add(sword);
+
+  } else if (type === 'GIANT') {
+    const head = walker(radius, color);
+    group.add(sphere(radius * 0.45, color, head - 0.16));
+    for (const side of [-1, 1]) {
+      const arm = cylinder(0.09, 0.11, 0.55, color, 0.25);
+      arm.position.set(side * (radius + 0.11), arm.position.y, 0);
+      group.add(arm);
+    }
+
+  } else if (type === 'GOBLIN') {
+    const head = walker(radius * 0.8, color);
+    for (const side of [-1, 1]) {
+      const ear = cone(0.07, 0.24, color, head - 0.28, 5);
+      ear.position.set(side * 0.17, ear.position.y, 0);
+      ear.rotation.z = side * 0.9;
+      group.add(ear);
+    }
+    const sack = sphere(0.14, PALETTE.gold, 0.08);
+    sack.position.z = -0.22;
+    group.add(sack);
+
+  } else if (type === 'HOG_RIDER') {
+    const hog = cylinder(0.17, 0.2, 0.62, 0x6f5540, 0.08);
+    hog.rotation.z = Math.PI / 2;
+    group.add(hog);
+    for (const [x, z] of [[-0.2, -0.13], [0.2, -0.13], [-0.2, 0.13], [0.2, 0.13]]) {
+      const leg = cylinder(0.05, 0.05, 0.22, 0x53412f, 0);
+      leg.position.set(x, leg.position.y, z);
+      group.add(leg);
+    }
+    group.add(sphere(0.16, color, 0.42));
+    const hammer = box(0.18, 0.13, 0.13, 0x8a5a2b, 0.72);
+    hammer.position.x = 0.22;
+    group.add(hammer);
+
   } else {
-    const body = cylinder(radius * 0.8, radius, radius * 2.4, color, 0);
-    group.add(body);
-    group.add(sphere(radius * 0.9, color, radius * 2.4));
-    if (type === 'WIZARD') group.add(cone(radius, 0.35, 0x4a2f8a, radius * 2.4 + radius * 1.8, 8));
-    if (type === 'ARCHER') group.add(cone(radius * 0.8, 0.22, 0x4f8a5a, radius * 2.4 + radius * 1.8, 6));
+    const head = walker(radius, color);
+    if (type === 'WIZARD') group.add(cone(radius, 0.35, 0x4a2f8a, head, 8));
+    if (type === 'ARCHER') group.add(cone(radius * 0.8, 0.22, 0x4f8a5a, head, 6));
   }
 
   group.userData.airborne = movement === 'AIR';

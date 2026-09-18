@@ -3,7 +3,6 @@ package com.rolandhuon.clashofclans.service.targeting;
 import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
 import com.rolandhuon.clashofclans.domain.battle.TargetingStrategy;
 import com.rolandhuon.clashofclans.domain.common.Damageable;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

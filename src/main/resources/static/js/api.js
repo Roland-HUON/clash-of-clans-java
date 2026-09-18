@@ -14,11 +14,16 @@ async function request(path, options = {}) {
   });
 
   const text = await response.text();
-  const body = text ? JSON.parse(text) : null;
+
+  let body = null;
+  try {
+    body = text ? JSON.parse(text) : null;
+  } catch {
+    if (response.ok) throw new ApiError(response.status, 'The server sent something that is not JSON.');
+  }
 
   if (!response.ok) {
-    const message = body && (body.message || body.error) || response.statusText;
-    throw new ApiError(response.status, message);
+    throw new ApiError(response.status, (body && (body.message || body.error)) || response.statusText);
   }
   return body;
 }

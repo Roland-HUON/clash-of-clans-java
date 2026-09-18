@@ -273,6 +273,24 @@
       "description": "A player owns several villages. Each village holds buildings.",
       "item": [
         {
+          "name": "List every village",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "List a player villages",
           "request": {
             "method": "GET",
@@ -400,6 +418,26 @@
               ]
             },
             "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Collect the mines",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{villageId}}/collect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{villageId}}",
+                "collect"
+              ]
+            }
           },
           "response": []
         }

@@ -84,7 +84,8 @@ public class RaidService {
         target.loot(loot.gold(), loot.elixir(), loot.darkElixir());
         attacker.earn(loot.gold(), loot.elixir(), loot.darkElixir());
 
-        TrophyExchange trophies = TrophyExchange.forStars(result.stars());
+        TrophyExchange trophies = TrophyExchange.forStars(result.stars())
+                .cappedBy(attacker.getTrophies(), defender.getTrophies());
         attacker.applyTrophyDelta(trophies.attackerDelta());
         defender.applyTrophyDelta(trophies.defenderDelta());
 

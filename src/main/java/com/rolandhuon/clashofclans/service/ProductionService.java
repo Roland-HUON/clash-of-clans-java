@@ -61,11 +61,4 @@ public class ProductionService {
 
         return harvest;
     }
-
-    @Transactional
-    public void startProducing(Village village) {
-        Instant now = clock.instant();
-        village.getBuildings().forEach(building -> building.startProducing(now));
-        villageRepository.save(village);
-    }
 }

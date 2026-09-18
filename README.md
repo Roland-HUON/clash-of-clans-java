@@ -50,6 +50,9 @@ The first build downloads a JDK image and the dependencies, so allow a few minut
 Import `postman/clash-of-clans.postman_collection.json` into Postman for the full
 set of requests, grouped by topic.
 
+A chief created through `POST /api/players` starts with every troop type unlocked at
+level one, so a new account can raid immediately and grow from the laboratory.
+
 The database is seeded on first start with **fifty players**, their villages,
 buildings and troops. Roland sits on top with 5 110 trophies, a fully maxed base and
 999 999 999 999 of each currency; Dutofa follows with 4 931, and the rest of the
@@ -67,6 +70,7 @@ framework, no package manager: three.js comes from a CDN through an import map.
 static/index.html      the shell
 static/css/app.css     the Clash of Clans look
 static/js/api.js       one function per endpoint
+static/js/icons.js     the gold, elixir, dark elixir and trophy icons, drawn as SVG
 static/js/meshes.js    a low-poly mesh per building and troop type
 static/js/village.js   the scene, the ring layout, the animation loop
 static/js/app.js       the panels, the raid, the result screen
@@ -89,7 +93,8 @@ with `409` when the purse is short — the front end only shows what came back.
 
 The village is an island: grass inside a wall ring, defences on the outside ring,
 resources in the middle, the core buildings at the centre, with trees, rocks, water
-and drifting clouds around it.
+and drifting clouds around it. Twenty-one building types each have their own low-poly
+mesh, from the Monolith's turning crystal to the Dark Elixir Drill's glowing bit.
 
 > The crest and the wordmark are original artwork drawn for this project. The real
 > Clash of Clans logo, fonts and art are Supercell's, and are deliberately not used
@@ -128,6 +133,9 @@ limit.
 | `ELIXIR` | troops, the laboratory, the camps, the Gold Mine and Gold Storage |
 | `DARK_ELIXIR` | the Monolith, the Hero Hall, the Pet House and the Hog Rider |
 
+The Dark Elixir Drill and the Dark Elixir Storage are paid for in elixir, like the
+other mines, but the drill produces dark elixir.
+
 Each type carries its own currency, so a single upgrade path handles all of them:
 `EntityType.upgradeResource()` says what to charge, `upgradeCostFrom(level)` says how much.
 
@@ -135,6 +143,11 @@ A building also costs something to put up. That price is the level-one entry of 
 own stats table — a slot that used to hold a hard-coded `0` that nothing ever read,
 since `upgradeCostFrom(level)` always looks at `level + 1`. `BuildingType.buildCost()`
 gives it a meaning instead of adding a field.
+
+Asking for a building above level one is not a shortcut: `costUpTo(level)` charges the
+build cost **plus every upgrade** up to that level, so putting up a level-8 Cannon
+costs exactly what putting up a level-1 Cannon and upgrading it seven times costs. A
+test asserts that no building is dearer to put up than to improve.
 
 ### Loot
 
@@ -145,15 +158,26 @@ panel shows what a target still has before you commit an army.
 
 ### Production
 
-A Gold Mine and an Elixir Collector fill up on their own, at a rate that grows with
-their level (200 an hour at level one, 1 800 at level six). Nothing runs in the
+Each currency has one producer and one storage: a Gold Mine, an Elixir Collector and
+a Dark Elixir Drill, each filling up on its own at a rate that grows with its level.
+A mine or a collector makes 200 an hour at level one and 1 800 at level six; the drill
+is far slower, 20 an hour at level one and 100 at level six, as befits the rarest
+currency. A test asserts that every `ResourceType` has exactly one producer, so adding
+a currency without its mine breaks the build. Nothing runs in the
 background: a building remembers when it was last emptied, and what it owes is worked
 out from the time elapsed when you ask. That way the mines keep filling while the
 application is down, and a test can hand the calculation any instant it likes instead
 of waiting.
 
-A mine stops once it holds **six hours** of production, so a village left alone for a
-month is worth no more than one left alone for an evening.
+A producer stops once it holds **six hours** of its own output, so a village left
+alone for a month is worth no more than one left alone for an evening. Collecting
+advances that producer's clock only by the whole minutes it was paid for, so calling
+`/collect` every few seconds neither pays twice nor throws away the minutes you had
+banked — a test walks both cases.
+
+The three storages are not decoration: a village can only hold as much of a currency
+as its storages for that currency allow. A harvest that would overflow them is
+truncated, while the owner's purse — what upgrades are paid from — has no ceiling.
 
 `POST /api/villages/{id}/collect` empties every producer. What comes out lands in two
 places: the owner's **purse**, which is what upgrades and buildings are paid from, and
@@ -186,9 +210,9 @@ troop type has no strategy, so a missing one is a startup failure, never a
 
 A `SUPPORT` troop heals its weakest wounded ally instead of attacking.
 
-A `SPLASH` troop (Balloon, Wizard, Dragon) hits its target and the units beside it:
-`AttackProfile.splashTargets()` derives how many from the blast radius, one for a
-wizard or a dragon, two for a balloon. Without a grid there is no geometry, so
+A `SPLASH` unit — the Balloon, Wizard and Dragon among the troops, the Mortar,
+Wizard Tower, Multi-Gear Tower and Ricochet Cannon among the defences — hits its target and the units beside it:
+`AttackProfile.splashTargets()` derives how many from the blast radius. Without a grid there is no geometry, so
 "beside" means the next units the battle is holding; splash never reaches a unit the
 attacker could not target on its own.
 
@@ -222,8 +246,11 @@ defaults to `true`, and `DefensiveBuilding` overrides it by asking its
 Defences (`Cannon`, `Archer Tower`, `Mortar`, `Wizard Tower`, `Air Defense`,
 `Hidden Tesla`, `Monolith`) and the merged defences (`Ricochet Cannon`,
 `Multi-Archer Tower`, `Multi-Gear Tower`) carry a damage table and **shoot back**
-at the attacking army on every turn, within the limits of the table above. Resource buildings (`Gold Mine`,
-`Elixir Collector`, `Gold Storage`, `Elixir Storage`) are what a Goblin runs for.
+at the attacking army on every turn, within the limits of the table above. The Mortar,
+the Wizard Tower, the Multi-Gear Tower and the Ricochet Cannon carry a splash profile
+of their own, so they catch bystanders exactly as a Wizard or a Dragon does. Resource buildings (`Gold Mine`,
+`Elixir Collector`, `Dark Elixir Drill` and the three storages) are what a Goblin
+runs for.
 Military camps decide how many troops an army may hold.
 
 `BuildingType.isDefensive()` is derived from the damage table rather than declared,
@@ -251,8 +278,8 @@ starts the PostgreSQL container, so Docker must be running. To skip it:
 | --- | --- | --- |
 | `coc.battle.max-turns` | `180` | hard limit on a battle, so a raid always terminates |
 | `coc.api.rate-limit.enabled` | `true` | turns the API rate limiting on or off |
-| `coc.api.rate-limit.capacity` | `60` | requests allowed per client and per window |
-| `coc.api.rate-limit.refill-seconds` | `60` | length of the window, in seconds |
+| `coc.api.rate-limit.capacity` | `60` | tokens a client's bucket holds |
+| `coc.api.rate-limit.refill-seconds` | `60` | seconds to refill a bucket from empty to full |
 | `coc.api.rate-limit.max-tracked-clients` | `10000` | bound on the in-memory client table |
 | `coc.api.rate-limit.trust-forwarded-for` | `false` | read the client from `X-Forwarded-For` |
 | `spring.jpa.show-sql` | `true` | development only, prints every statement |
@@ -267,16 +294,22 @@ Any property can be overridden at launch without rebuilding:
 
 ## API protection
 
-Every `/api/**` request goes through a per-client fixed window. The client is the
+Every `/api/**` request goes through a per-client **token bucket**: the bucket holds
+`capacity` tokens, refills continuously at `capacity` tokens per `refill-seconds`, and
+a request spends one. A client that runs out is not locked out until some window
+rolls over — it can go again as soon as one token has dripped back, and `Retry-After`
+says exactly when. The client is the
 remote address, and **only** the `X-Forwarded-For` address when
 `coc.api.rate-limit.trust-forwarded-for` is on — otherwise any client could leave
 its own quota behind by setting one header. Each answer carries `X-RateLimit-Limit`
 and `X-RateLimit-Remaining`; over the quota the request is refused with `429` and a
 `Retry-After` header instead of reaching a controller.
 
-The client table is bounded: past `max-tracked-clients`, expired windows are dropped
-first, and any client that still does not fit shares one overflow window rather than
-taking the application down.
+The client table is bounded: past `max-tracked-clients`, idle buckets are dropped
+first, and any client that still does not fit shares one overflow bucket rather than
+taking the application down. `capacity`, `refill-seconds` and `max-tracked-clients`
+are all rejected at startup if they are below 1, so a typo cannot silently brick the
+API.
 
 Swagger UI and the OpenAPI document are not under `/api`, so they are never throttled.
 
@@ -293,6 +326,15 @@ default body, which carries `error` instead of `message`:
 | `MethodArgumentTypeMismatchException`, `HttpMessageNotReadableException` | `400` |
 | `NotFoundException` | `404` |
 | `InsufficientResourcesException` | `409` |
+
+## Trophies
+
+A raid moves trophies from one chief to the other and **never mints or destroys any**.
+`TrophyExchange.forStars` gives the nominal swing — 0 stars is −8/+8, three stars is
++32/−32 — and `cappedBy` then trims it to what the losing side actually holds, so three
+stars against a chief with 10 trophies is worth 10, not 32, and nobody is ever pushed
+below zero. A test walks the four star counts against twenty-five combinations of
+balances and asserts the sum is always zero.
 
 ## Swagger
 
@@ -328,5 +370,5 @@ such as Flyway is introduced, drop the affected tables and let Hibernate recreat
 
 ```bash
 docker compose exec postgres psql -U coc -d coc \
-  -c "DROP TABLE IF EXISTS village_building, player_troop, village, player CASCADE;"
+  -c "DROP TABLE IF EXISTS battle_record, village_building, player_troop, village, player CASCADE;"
 ```

@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RateLimitFilterTest {
 
@@ -127,5 +128,35 @@ class RateLimitFilterTest {
         for (int i = 0; i < CAPACITY * 3; i++) {
             assertThat(call(filter, request("/api/players", "10.0.0.1")).getStatus()).isEqualTo(200);
         }
+    }
+
+    @Test
+    @DisplayName("Impossible settings are refused instead of bricking the API.")
+    void impossibleSettingsAreRefused() {
+        assertThatThrownBy(() -> new RateLimitProperties(true, 0, 60, 10_000, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("capacity");
+
+        assertThatThrownBy(() -> new RateLimitProperties(true, 60, 0, 10_000, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("refill-seconds");
+
+        assertThatThrownBy(() -> new RateLimitProperties(true, 60, 60, 0, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("max-tracked-clients");
+    }
+
+    @Test
+    @DisplayName("The bucket drips: a refused client gets a Retry-After it can act on.")
+    void aRefusedClientIsToldWhenToComeBack() throws Exception {
+        RateLimitFilter filter = filter(true);
+        for (int i = 0; i < CAPACITY; i++) call(filter, request("/api/players", "10.0.0.9"));
+
+        MockHttpServletResponse refused = call(filter, request("/api/players", "10.0.0.9"));
+
+        assertThat(refused.getStatus()).isEqualTo(429);
+        assertThat(Long.parseLong(refused.getHeader("Retry-After")))
+                .as("one token of a %d-per-60s bucket is worth about %d seconds", CAPACITY, 60 / CAPACITY)
+                .isBetween(1L, 60L);
     }
 }

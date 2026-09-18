@@ -1,6 +1,7 @@
 package com.rolandhuon.clashofclans.service;
 
 import com.rolandhuon.clashofclans.dto.PlayerRequest;
+import com.rolandhuon.clashofclans.domain.troop.TroopType;
 import com.rolandhuon.clashofclans.model.Player;
 import com.rolandhuon.clashofclans.model.PlayerTroop;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
@@ -32,6 +33,10 @@ public class PlayerService {
                 request.gold(),
                 request.elixir(),
                 request.darkElixir());
+
+        for (TroopType type : TroopType.values()) {
+            player.addTroop(new PlayerTroop(type, 1));
+        }
 
         return playerRepository.save(player);
     }

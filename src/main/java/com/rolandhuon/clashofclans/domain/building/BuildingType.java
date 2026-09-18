@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.domain.building;
 
+import com.rolandhuon.clashofclans.domain.common.AttackProfile;
 import com.rolandhuon.clashofclans.domain.common.EntityType;
 import com.rolandhuon.clashofclans.domain.common.Movement;
 import com.rolandhuon.clashofclans.domain.common.TargetScope;
@@ -17,7 +18,7 @@ import static com.rolandhuon.clashofclans.domain.common.ResourceType.GOLD;
 public enum BuildingType implements EntityType {
 
     LABORATORY("Laboratory", 1, ELIXIR, List.of(
-            new BuildingStats(500,25000),
+            new BuildingStats(500, 250),
             new BuildingStats(550, 500),
             new BuildingStats(600, 1500),
             new BuildingStats(650, 3000),
@@ -35,7 +36,7 @@ public enum BuildingType implements EntityType {
     )),
 
     HEROHALL("Hero Hall", 1, DARK_ELIXIR, List.of(
-            new BuildingStats(2000,1000),
+            new BuildingStats(2000, 50),
             new BuildingStats(2400, 100),
             new BuildingStats(2800, 250),
             new BuildingStats(3200, 500),
@@ -51,7 +52,7 @@ public enum BuildingType implements EntityType {
 
     MILITARY_CAMP("Military Camp", 4, ELIXIR,
             List.of(
-                    new BuildingStats(100,10000),
+                    new BuildingStats(100, 1500),
                     new BuildingStats(120, 2500),
                     new BuildingStats(140, 10000),
                     new BuildingStats(160, 100000),
@@ -100,7 +101,7 @@ public enum BuildingType implements EntityType {
             new BuildingStats(600, 400000),
             new BuildingStats(650, 800000)
     ),
-            new Firepower(List.of(4, 5, 6, 7, 9, 11), TargetScope.GROUND_ONLY)),
+            new Firepower(List.of(4, 5, 6, 7, 9, 11), TargetScope.GROUND_ONLY, AttackProfile.splash(4.0, 1.5))),
 
     WIZARD_TOWER("Wizard Tower", 5, GOLD, List.of(
             new BuildingStats(620,180000),
@@ -109,7 +110,7 @@ public enum BuildingType implements EntityType {
             new BuildingStats(740, 720000),
             new BuildingStats(810, 1200000)
     ),
-            new Firepower(List.of(11, 13, 16, 20, 24), TargetScope.ALL)),
+            new Firepower(List.of(11, 13, 16, 20, 24), TargetScope.ALL, AttackProfile.splash(3.0, 0.3))),
 
     AIR_DEFENSE("Air Defense", 4, GOLD, List.of(
             new BuildingStats(800,22500),
@@ -130,11 +131,11 @@ public enum BuildingType implements EntityType {
             new Firepower(List.of(33, 41, 49, 57, 65), TargetScope.ALL)),
 
     RICOCHET_CANNON("Ricochet Cannon", 3, GOLD, List.of(
-            new BuildingStats(1600,1000000),
+            new BuildingStats(1600, 750000),
             new BuildingStats(1750, 900000),
             new BuildingStats(1900, 1600000)
     ),
-            new Firepower(List.of(85, 95, 105), TargetScope.GROUND_ONLY)),
+            new Firepower(List.of(85, 95, 105), TargetScope.GROUND_ONLY, AttackProfile.splash(9.0, 0.2))),
 
     MULTI_ARCHER_TOWER("Multi-Archer Tower", 4, GOLD, List.of(
             new BuildingStats(1380,1000000),
@@ -148,7 +149,7 @@ public enum BuildingType implements EntityType {
             new BuildingStats(1580, 1200000),
             new BuildingStats(1700, 2000000)
     ),
-            new Firepower(List.of(60, 70, 80), TargetScope.GROUND_ONLY)),
+            new Firepower(List.of(60, 70, 80), TargetScope.GROUND_ONLY, AttackProfile.splash(4.0, 1.0))),
 
     GOLD_MINE("Gold Mine", 7, ELIXIR, List.of(
             new BuildingStats(400,150),
@@ -176,7 +177,8 @@ public enum BuildingType implements EntityType {
             new BuildingStats(1000, 90000),
             new BuildingStats(1200, 300000),
             new BuildingStats(1400, 800000)
-    )),
+    ),
+            new Storage(List.of(50000, 150000, 400000, 1000000, 2500000), ResourceType.GOLD)),
 
     ELIXIR_STORAGE("Elixir Storage", 4, GOLD, List.of(
             new BuildingStats(600,300),
@@ -184,7 +186,27 @@ public enum BuildingType implements EntityType {
             new BuildingStats(1000, 90000),
             new BuildingStats(1200, 300000),
             new BuildingStats(1400, 800000)
-    )),
+    ),
+            new Storage(List.of(50000, 150000, 400000, 1000000, 2500000), ResourceType.ELIXIR)),
+
+    DARK_ELIXIR_DRILL("Dark Elixir Drill", 3, ELIXIR, List.of(
+            new BuildingStats(800, 600000),
+            new BuildingStats(860, 1200000),
+            new BuildingStats(920, 1800000),
+            new BuildingStats(980, 2600000),
+            new BuildingStats(1040, 3400000),
+            new BuildingStats(1100, 4200000)
+    ),
+            new Production(List.of(20, 30, 45, 60, 80, 100), ResourceType.DARK_ELIXIR)),
+
+    DARK_ELIXIR_STORAGE("Dark Elixir Storage", 1, ELIXIR, List.of(
+            new BuildingStats(1000, 500000),
+            new BuildingStats(1200, 1000000),
+            new BuildingStats(1400, 1800000),
+            new BuildingStats(1600, 2800000),
+            new BuildingStats(1800, 3800000)
+    ),
+            new Storage(List.of(2000, 5000, 12000, 25000, 50000), ResourceType.DARK_ELIXIR)),
 
     MONOLITH("Monolith", 1, DARK_ELIXIR, List.of(
             new BuildingStats(3000,120),
@@ -194,7 +216,7 @@ public enum BuildingType implements EntityType {
             new Firepower(List.of(200, 230, 260), TargetScope.GROUND_ONLY)),
 
     SPELL_FACTORY("Spell Factory", 1, ELIXIR, List.of(
-            new BuildingStats(425,20000),
+            new BuildingStats(425, 2000),
             new BuildingStats(470, 4000),
             new BuildingStats(520, 12000),
             new BuildingStats(570, 40000),
@@ -202,7 +224,7 @@ public enum BuildingType implements EntityType {
     )),
 
     PET_HOUSE("Pet House", 1, DARK_ELIXIR, List.of(
-            new BuildingStats(1500,800),
+            new BuildingStats(1500, 200),
             new BuildingStats(1700, 400),
             new BuildingStats(1900, 800),
             new BuildingStats(2100, 1500)
@@ -217,31 +239,45 @@ public enum BuildingType implements EntityType {
     private final TargetScope targetScope;
     private final List<Integer> productionByLevel;
     private final ResourceType producedResource;
+    private final AttackProfile attackProfile;
+    private final List<Integer> storageByLevel;
+    private final ResourceType storedResource;
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource, List<BuildingStats> statsByLevel){
-        this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE, List.of(), null);
+        this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE,
+                List.of(), null, AttackProfile.single(0), List.of(), null);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, HousingCapacity capacity){
-        this(label, maxCount, upgradeResource, statsByLevel, capacity.byLevel(), List.of(), TargetScope.NONE, List.of(), null);
+        this(label, maxCount, upgradeResource, statsByLevel, capacity.byLevel(), List.of(), TargetScope.NONE,
+                List.of(), null, AttackProfile.single(0), List.of(), null);
+    }
+
+    BuildingType(String label, int maxCount, ResourceType upgradeResource,
+                 List<BuildingStats> statsByLevel, Storage storage){
+        this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE,
+                List.of(), null, AttackProfile.single(0), storage.capacityByLevel(), storage.resource());
+        requireSameSize(label, "storage", storage.capacityByLevel(), statsByLevel);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, Production production){
         this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE,
-                production.perHourByLevel(), production.resource());
+                production.perHourByLevel(), production.resource(), AttackProfile.single(0), List.of(), null);
         requireSameSize(label, "production", production.perHourByLevel(), statsByLevel);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, Firepower firepower){
-        this(label, maxCount, upgradeResource, statsByLevel, List.of(), firepower.byLevel(), firepower.targets(), List.of(), null);
+        this(label, maxCount, upgradeResource, statsByLevel, List.of(), firepower.byLevel(), firepower.targets(),
+                List.of(), null, firepower.profile(), List.of(), null);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource, List<BuildingStats> statsByLevel,
                  List<Integer> housingCapacityByLevel, List<Integer> damageByLevel, TargetScope targetScope,
-                 List<Integer> productionByLevel, ResourceType producedResource){
+                 List<Integer> productionByLevel, ResourceType producedResource,
+                 AttackProfile attackProfile, List<Integer> storageByLevel, ResourceType storedResource){
         if(statsByLevel.isEmpty()) throw new IllegalArgumentException(label + " must declare at least one level.");
         if(damageByLevel.isEmpty() != (targetScope == TargetScope.NONE)){
             throw new IllegalArgumentException(label + ": a building deals damage exactly when it has something to shoot at");
@@ -257,6 +293,9 @@ public enum BuildingType implements EntityType {
         this.targetScope = targetScope;
         this.productionByLevel = List.copyOf(productionByLevel);
         this.producedResource = producedResource;
+        this.attackProfile = attackProfile;
+        this.storageByLevel = List.copyOf(storageByLevel);
+        this.storedResource = storedResource;
     }
 
     private static void requireSameSize(String label, String what, List<Integer> table, List<BuildingStats> stats){
@@ -303,7 +342,8 @@ public enum BuildingType implements EntityType {
 
     public boolean isResourceBuilding(){
         return switch (this) {
-            case GOLD_MINE, ELIXIR_COLLECTOR, GOLD_STORAGE, ELIXIR_STORAGE -> true;
+            case GOLD_MINE, ELIXIR_COLLECTOR, DARK_ELIXIR_DRILL,
+                 GOLD_STORAGE, ELIXIR_STORAGE, DARK_ELIXIR_STORAGE -> true;
             default -> false;
         };
     }
@@ -333,12 +373,38 @@ public enum BuildingType implements EntityType {
         return produces() ? productionByLevel.get(level - 1) : 0;
     }
 
-    public int storageCapacityAt(int level){
+    public int mineCapacityAt(int level){
         return productionPerHourAt(level) * Production.STORAGE_HOURS;
+    }
+
+    public AttackProfile attackProfile(){
+        return attackProfile;
+    }
+
+    public boolean stores(){
+        return !storageByLevel.isEmpty();
+    }
+
+    public ResourceType storedResource(){
+        return storedResource;
+    }
+
+    public int storageCapacityAt(int level){
+        statsAt(level);
+        return stores() ? storageByLevel.get(level - 1) : 0;
     }
 
     public int buildCost(){
         return statsAt(1).upgradeCost();
+    }
+
+    public int costUpTo(int level){
+        statsAt(level);
+        int total = buildCost();
+        for(int current = 1; current < level; current++){
+            total += upgradeCostFrom(current);
+        }
+        return total;
     }
 
     public int damageAt(int level){

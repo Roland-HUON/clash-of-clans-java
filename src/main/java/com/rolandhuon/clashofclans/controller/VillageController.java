@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import com.rolandhuon.clashofclans.dto.AddBuildingRequest;
+import com.rolandhuon.clashofclans.dto.BuildingRequest;
 import com.rolandhuon.clashofclans.dto.VillageBuildingDto;
 import com.rolandhuon.clashofclans.dto.VillageDto;
 import com.rolandhuon.clashofclans.dto.VillageRequest;
@@ -97,7 +97,7 @@ public class VillageController {
     }
 
         @Operation(summary = "Collect the mines",
-            description = "Empties every Gold Mine and Elixir Collector of what it has produced since the last collection. The amount lands both in the owner's purse, where it can be spent, and in the village's stock, where raiders can reach it. A mine stops filling once it holds six hours of production.")
+            description = "Empties every producer in the village - Gold Mine, Elixir Collector and Dark Elixir Drill - of what it has made since the last collection. The amount lands both in the owner's purse, where it can be spent, and in the village's stock, where raiders can reach it. A producer stops filling once it holds six hours of its own output.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The mines were emptied; what was collected is returned."),
             @ApiResponse(responseCode = "404", description = "No village carries that id."),
@@ -119,7 +119,7 @@ public class VillageController {
     })
     @PostMapping("/api/villages/{villageId}/buildings")
     @ResponseStatus(HttpStatus.CREATED)
-    public VillageBuildingDto addBuilding(@PathVariable Long villageId, @Valid @RequestBody AddBuildingRequest request) {
+    public VillageBuildingDto addBuilding(@PathVariable Long villageId, @Valid @RequestBody BuildingRequest request) {
         return VillageBuildingDto.from(villageService.addBuilding(villageId, request));
     }
 }

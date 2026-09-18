@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.model;
 
+import com.rolandhuon.clashofclans.domain.common.Balance;
 import com.rolandhuon.clashofclans.domain.common.ResourceType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -80,13 +81,9 @@ public class Player {
 
     public void earn(long gold, long elixir, long darkElixir) {
         if (gold < 0 || elixir < 0 || darkElixir < 0) throw new IllegalArgumentException("Loot must be >= 0");
-        this.gold = addCapped(this.gold, gold);
-        this.elixir = addCapped(this.elixir, elixir);
-        this.darkElixir = addCapped(this.darkElixir, darkElixir);
-    }
-
-    private static long addCapped(long balance, long earned) {
-        return balance > Long.MAX_VALUE - earned ? Long.MAX_VALUE : balance + earned;
+        this.gold = Balance.plus(this.gold, gold);
+        this.elixir = Balance.plus(this.elixir, elixir);
+        this.darkElixir = Balance.plus(this.darkElixir, darkElixir);
     }
 
     public void applyTrophyDelta(int delta) {

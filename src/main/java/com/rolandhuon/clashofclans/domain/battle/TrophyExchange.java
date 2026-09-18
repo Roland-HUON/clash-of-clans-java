@@ -2,6 +2,18 @@ package com.rolandhuon.clashofclans.domain.battle;
 
 public record TrophyExchange(int attackerDelta, int defenderDelta) {
 
+    public TrophyExchange cappedBy(int attackerTrophies, int defenderTrophies) {
+        if (attackerTrophies < 0 || defenderTrophies < 0) {
+            throw new IllegalArgumentException("A trophy count cannot be negative");
+        }
+
+        int delta = attackerDelta < 0
+                ? -Math.min(-attackerDelta, attackerTrophies)
+                : Math.min(attackerDelta, defenderTrophies);
+
+        return new TrophyExchange(delta, -delta);
+    }
+
     public static TrophyExchange forStars(int stars) {
         return switch (stars) {
             case 0 -> new TrophyExchange(-8, 8);

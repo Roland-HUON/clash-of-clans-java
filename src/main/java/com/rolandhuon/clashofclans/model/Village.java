@@ -1,6 +1,8 @@
 package com.rolandhuon.clashofclans.model;
 
 import com.rolandhuon.clashofclans.domain.building.BuildingType;
+import com.rolandhuon.clashofclans.domain.common.Balance;
+import com.rolandhuon.clashofclans.domain.common.ResourceType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -54,9 +56,24 @@ public class Village {
     }
 
     public void stock(long gold, long elixir, long darkElixir) {
-        this.gold += gold;
-        this.elixir += elixir;
-        this.darkElixir += darkElixir;
+        this.gold = capped(this.gold, gold, ResourceType.GOLD);
+        this.elixir = capped(this.elixir, elixir, ResourceType.ELIXIR);
+        this.darkElixir = capped(this.darkElixir, darkElixir, ResourceType.DARK_ELIXIR);
+    }
+
+    public long capacityFor(ResourceType resource) {
+        return buildings.stream()
+                .filter(building -> building.getType().stores())
+                .filter(building -> building.getType().storedResource() == resource)
+                .mapToLong(building -> building.getType().storageCapacityAt(building.getLevel()))
+                .sum();
+    }
+
+    private long capped(long current, long added, ResourceType resource) {
+        long raised = Balance.plus(current, added);
+        long capacity = capacityFor(resource);
+
+        return capacity == 0 ? raised : Math.min(raised, Math.max(capacity, current));
     }
 
     public void loot(long gold, long elixir, long darkElixir) {

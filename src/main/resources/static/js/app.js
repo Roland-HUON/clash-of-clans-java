@@ -57,11 +57,15 @@ const state = {
   unlocked: [],
   army: new Map(),
   targets: [],
+  rank: null,
   busy: false
 };
 
 const scene = new VillageScene($('canvasHost'));
 const format = (n) => new Intl.NumberFormat('en').format(n ?? 0);
+const LEADERBOARD_SIZE = 25;
+const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const compact = (n) => (Math.abs(n ?? 0) < 100_000
   ? format(n)
   : new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n));
@@ -101,8 +105,6 @@ function familyOf(type) {
   return 'core';
 }
 
-/* ---------- hover card ---------- */
-
 scene.onHover = (hit) => {
   if (!hit) return el.tooltip.setAttribute('hidden', '');
 
@@ -113,15 +115,13 @@ scene.onHover = (hit) => {
     : type.resource ? 'resource building' : type.camp ? 'holds troops' : 'not a defence';
 
   el.tooltip.innerHTML =
-    `${building.label} <small>level ${building.level}/${building.maxLevel} · ${format(building.hitPoints)} hp · ${reach}</small>`;
+    `${escape(building.label)} <small>level ${building.level}/${building.maxLevel} · ${format(building.hitPoints)} hp · ${reach}</small>`;
   el.tooltip.removeAttribute('hidden');
 
   const box = el.tooltip.parentElement.getBoundingClientRect();
   el.tooltip.style.left = `${hit.x - box.left}px`;
   el.tooltip.style.top = `${hit.y - box.top}px`;
 };
-
-/* ---------- boot ---------- */
 
 async function boot() {
   try {
@@ -135,7 +135,7 @@ async function boot() {
     buildingTypes.forEach((t) => state.buildingTypes.set(t.id, t));
     state.players = players;
 
-    el.playerSelect.innerHTML = players.map((p) => `<option value="${p.id}">${p.name}</option>`).join('');
+    el.playerSelect.innerHTML = players.map((p) => `<option value="${p.id}">${escape(p.name)}</option>`).join('');
 
     await loadTargets();
     await selectPlayer(players[0].id);
@@ -153,12 +153,10 @@ async function loadTargets() {
   state.targets = villages.map((village) => ({ ...village, owner: byId.get(village.playerId) }));
 }
 
-/* ---------- player ---------- */
-
 async function selectPlayer(playerId) {
   const [player, villages, troops, rank, leaderboard] = await Promise.all([
     api.player(playerId), api.villages(playerId), api.troops(playerId),
-    api.rank(playerId), api.leaderboard(25)
+    api.rank(playerId), api.leaderboard(LEADERBOARD_SIZE)
   ]);
 
   state.player = player;
@@ -167,36 +165,45 @@ async function selectPlayer(playerId) {
   renderHud(player, rank);
   renderLeaderboard(leaderboard, player);
 
-  el.villageSelect.innerHTML = villages.map((v) => `<option value="${v.id}">${v.name}</option>`).join('');
+  el.villageSelect.innerHTML = villages.map((v) => `<option value="${v.id}">${escape(v.name)}</option>`).join('');
 
   renderTroops();
   renderArmyPicker();
   renderTargets();
 
-  if (villages.length) await showVillage(villages[0].id, { home: true });
+  if (villages.length) {
+    await showVillage(villages[0].id, { home: true });
+  } else {
+    state.homeVillage = null;
+    el.villageTitle.textContent = `${player.name} has no village yet`;
+    el.buildingList.innerHTML = '';
+    el.collectRow.hidden = true;
+    el.buildBtn.disabled = true;
+    scene.setVillage({ buildings: [] }, state.buildingTypes);
+  }
 }
 
 function renderHud(player, rank) {
+  if (rank) state.rank = rank;
+  rank = state.rank || rank;
   for (const [node, value] of [[el.gold, player.gold], [el.elixir, player.elixir], [el.dark, player.darkElixir]]) {
     node.textContent = compact(value);
     node.parentElement.title = `${format(value)}`;
   }
   el.trophies.textContent = format(player.trophies);
-  el.rank.textContent = `Rank ${rank.rank}`;
+  el.rank.textContent = rank ? `Rank ${rank.rank}` : '—';
 }
 
 function renderLeaderboard(entries, player) {
   el.leaderboard.innerHTML = entries.map((entry) =>
     `<li class="${entry.playerId === player.id ? 'me' : ''}" data-player="${entry.playerId}">
-       ${entry.name}<span>${format(entry.trophies)}</span>
+       ${escape(entry.name)}<span>${format(entry.trophies)}</span>
      </li>`).join('');
 
   for (const row of el.leaderboard.querySelectorAll('li')) {
     row.addEventListener('click', () => scoutPlayer(Number(row.dataset.player)));
   }
 }
-
-/* ---------- village ---------- */
 
 async function showVillage(villageId, { home = false } = {}) {
   const village = await api.village(villageId);
@@ -212,6 +219,7 @@ async function showVillage(villageId, { home = false } = {}) {
 
 function present(village, mode) {
   const editable = mode === 'home';
+  state.scouting = !editable;
   const owner = state.players.find((p) => p.id === village.playerId);
   const name = owner ? owner.name : 'Enemy';
 
@@ -231,6 +239,7 @@ function present(village, mode) {
   renderBuildings(village, editable);
   renderBuildOptions(village, editable);
   renderPending(village, editable);
+  renderTroops(editable);
 }
 
 function renderPending(village, editable) {
@@ -261,7 +270,7 @@ async function collect() {
       ? 'The mines had nothing yet.'
       : `Collected ${format(harvest.gold)} gold, ${format(harvest.elixir)} elixir, ${format(harvest.darkElixir)} dark elixir`);
 
-    await refreshHome();
+    await refreshAfterSpending({ village: true });
   } catch (error) {
     toast(describe(error), 'err');
   } finally {
@@ -275,7 +284,7 @@ function renderBuildings(village, editable) {
     return `<li data-id="${building.id}">
       <i class="dot ${familyOf(type)}"></i>
       <span class="row-name">
-        <b>${building.label}</b>
+        <b>${escape(building.label)}</b>
         <small>level ${building.level}/${building.maxLevel} · ${format(building.hitPoints)} hp</small>
       </span>
       ${upgradeButton(building, editable, 'building')}
@@ -325,7 +334,7 @@ async function upgradeBuilding(id) {
   try {
     const upgraded = await api.upgradeBuilding(id);
     toast(`${upgraded.label} is now level ${upgraded.level}`);
-    await refreshHome();
+    await refreshAfterSpending({ village: true });
   } catch (error) {
     toast(describe(error), 'err');
   } finally {
@@ -339,7 +348,7 @@ async function upgradeTroop(id) {
   try {
     const upgraded = await api.upgradeTroop(id);
     toast(`${upgraded.label} is now level ${upgraded.level}`);
-    await refreshHome();
+    await refreshAfterSpending({ troops: true });
   } catch (error) {
     toast(describe(error), 'err');
   } finally {
@@ -347,23 +356,36 @@ async function upgradeTroop(id) {
   }
 }
 
-async function refreshHome() {
+async function refreshAfterSpending({ troops = false, village = false } = {}) {
+  const calls = [api.player(state.player.id)];
+  if (troops) calls.push(api.troops(state.player.id));
+
+  const [player, unlocked] = await Promise.all(calls);
+
+  state.player = player;
+  if (troops) state.unlocked = unlocked;
+
+  renderHud(player, state.rank);
+  renderTroops(true);
+  if (village && state.homeVillage) await showVillage(state.homeVillage.id, { home: true });
+}
+
+async function refreshEverything() {
   const [player, troops, rank, leaderboard] = await Promise.all([
     api.player(state.player.id), api.troops(state.player.id),
-    api.rank(state.player.id), api.leaderboard()
+    api.rank(state.player.id), api.leaderboard(LEADERBOARD_SIZE)
   ]);
 
   state.player = player;
   state.unlocked = troops;
+  state.rank = rank;
 
   renderHud(player, rank);
   renderLeaderboard(leaderboard, player);
-  renderTroops();
+  renderTroops(true);
 
   if (state.homeVillage) await showVillage(state.homeVillage.id, { home: true });
 }
-
-/* ---------- build ---------- */
 
 function renderBuildOptions(village, editable) {
   const counts = new Map();
@@ -376,7 +398,7 @@ function renderBuildOptions(village, editable) {
     .sort((a, b) => a.label.localeCompare(b.label));
 
   el.buildType.innerHTML = available
-    .map((type) => `<option value="${type.id}">${type.label} (${counts.get(type.id) || 0}/${type.maxCount}) — ${format(type.buildCost)} ${RESOURCE_LABEL[type.upgradeResource]}</option>`)
+    .map((type) => `<option value="${type.id}">${escape(type.label)} (${counts.get(type.id) || 0}/${type.maxCount}) — ${format(type.buildCost)} ${RESOURCE_LABEL[type.upgradeResource]}</option>`)
     .join('');
 
   el.buildBtn.disabled = !editable || available.length === 0;
@@ -418,19 +440,17 @@ async function build() {
   }
 }
 
-/* ---------- troops ---------- */
-
-function renderTroops() {
+function renderTroops(editable = !state.scouting) {
   el.troopList.innerHTML = state.unlocked.map((troop) => {
     const type = state.troopTypes.get(troop.type) || {};
     const tag = type.role === 'SUPPORT' ? 'support' : type.movement === 'AIR' ? 'air' : 'ground';
     return `<li>
       <i class="dot ${tag}"></i>
       <span class="row-name">
-        <b>${troop.label}</b>
+        <b>${escape(troop.label)}</b>
         <small>level ${troop.level}/${troop.maxLevel} · ${format(troop.hitPoints)} hp · ${troop.damage} dps</small>
       </span>
-      ${upgradeButton(troop, true, 'troop')}
+      ${upgradeButton(troop, editable, 'troop')}
     </li>`;
   }).join('');
 
@@ -438,12 +458,10 @@ function renderTroops() {
   el.troopHint.textContent = 'Upgrading a troop raises it for every raid.';
 }
 
-/* ---------- raid ---------- */
-
 function renderTargets() {
   const options = state.targets.filter((v) => v.playerId !== state.player.id);
   el.targetSelect.innerHTML = options
-    .map((v) => `<option value="${v.id}">${v.owner.name} — ${v.name}</option>`).join('');
+    .map((v) => `<option value="${v.id}">${escape(v.owner ? v.owner.name : '?')} — ${escape(v.name)}</option>`).join('');
   if (!options.length) el.raidHint.textContent = 'No other village to raid.';
   renderTargetLoot();
 }
@@ -477,7 +495,7 @@ function renderArmyPicker() {
     return `<li>
       <i class="dot ${tag}"></i>
       <span class="row-name">
-        <b>${troop.label}</b>
+        <b>${escape(troop.label)}</b>
         <small>level ${troop.level} · ${type.housingSpace} space</small>
       </span>
       <input type="number" min="0" value="0" data-type="${troop.type}">
@@ -534,21 +552,20 @@ async function attack() {
   const army = [...state.army].map(([type, count]) => ({ type, count }));
 
   try {
-    const [targetVillage, result] = await Promise.all([
-      api.village(targetId),
-      api.raid({
-        attackerId: state.player.id,
-        attackerVillageId: state.homeVillage.id,
-        targetVillageId: targetId,
-        army
-      })
-    ]);
+    const targetVillage = await api.village(targetId);
+    const result = await api.raid({
+      attackerId: state.player.id,
+      attackerVillageId: state.homeVillage.id,
+      targetVillageId: targetId,
+      army
+    });
 
     await playBattle(targetVillage, target, army, result);
     showResult(result, army);
 
     await loadTargets();
-    await selectPlayer(state.player.id);
+    await refreshEverything();
+    renderTargets();
   } catch (error) {
     el.raidHint.className = 'hint err';
     el.raidHint.textContent = describe(error);
@@ -629,8 +646,6 @@ function showResult(result, army) {
   el.overlay.removeAttribute('hidden');
 }
 
-/* ---------- scouting ---------- */
-
 async function scoutPlayer(playerId) {
   if (state.busy) return;
   try {
@@ -646,8 +661,6 @@ async function scoutPlayer(playerId) {
   }
 }
 
-/* ---------- wiring ---------- */
-
 el.playerSelect.addEventListener('change', (event) => {
   selectPlayer(Number(event.target.value)).catch((error) => toast(describe(error), 'err'));
 });
@@ -655,7 +668,8 @@ el.villageSelect.addEventListener('change', (event) => {
   showVillage(Number(event.target.value), { home: true }).catch((error) => toast(describe(error), 'err'));
 });
 el.homeBtn.addEventListener('click', () => {
-  if (state.homeVillage) showVillage(state.homeVillage.id, { home: true });
+  if (!state.homeVillage) return;
+  showVillage(state.homeVillage.id, { home: true }).catch((error) => toast(describe(error), 'err'));
 });
 el.buildBtn.addEventListener('click', build);
 el.collectBtn.addEventListener('click', collect);
@@ -664,7 +678,8 @@ el.buildType.addEventListener('change', updateBuildAffordability);
 el.attackBtn.addEventListener('click', attack);
 el.overlayClose.addEventListener('click', () => {
   el.overlay.setAttribute('hidden', '');
-  if (state.homeVillage) showVillage(state.homeVillage.id, { home: true });
+  if (!state.homeVillage) return;
+  showVillage(state.homeVillage.id, { home: true }).catch((error) => toast(describe(error), 'err'));
 });
 
 for (const tab of document.querySelectorAll('.tab')) {

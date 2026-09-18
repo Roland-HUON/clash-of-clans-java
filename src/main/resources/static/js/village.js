@@ -17,6 +17,16 @@ function ringOf(family) {
   return 'core';
 }
 
+function release(object) {
+  object.traverse((node) => {
+    if (node.geometry) node.geometry.dispose();
+    if (!node.material) return;
+    for (const material of Array.isArray(node.material) ? node.material : [node.material]) {
+      material.dispose();
+    }
+  });
+}
+
 function healthBar() {
   const group = new THREE.Group();
 
@@ -128,6 +138,8 @@ export class VillageScene {
     for (const { group, bar } of this.buildings.values()) {
       this.world.remove(group);
       this.world.remove(bar);
+      release(group);
+      release(bar);
     }
     this.buildings.clear();
     this.clearArmy();
@@ -260,12 +272,18 @@ export class VillageScene {
   }
 
   clearArmy() {
-    for (const troop of this.troops) this.world.remove(troop);
+    for (const troop of this.troops) {
+      this.world.remove(troop);
+      release(troop);
+    }
     this.troops = [];
   }
 
   clearEffects() {
-    for (const effect of this.effects) this.world.remove(effect.group);
+    for (const effect of this.effects) {
+      this.world.remove(effect.group);
+      if (effect.kind === 'puff') release(effect.group);
+    }
     this.effects = [];
   }
 
@@ -313,6 +331,7 @@ export class VillageScene {
         effect.group.scale.multiplyScalar(1 - delta * 0.7);
         if (effect.t > 1.6) {
           effect.group.visible = false;
+          this.world.remove(effect.group);
           return false;
         }
         return true;
@@ -324,6 +343,7 @@ export class VillageScene {
         effect.group.scale.multiplyScalar(1 + delta * 0.8);
         if (effect.t > 0.9) {
           this.world.remove(effect.group);
+          release(effect.group);
           return false;
         }
         return true;
@@ -334,6 +354,7 @@ export class VillageScene {
         effect.group.scale.multiplyScalar(1 - delta * 1.6);
         if (effect.t > 0.7) {
           effect.group.visible = false;
+          this.world.remove(effect.group);
           return false;
         }
         return true;

@@ -1,13 +1,11 @@
 package com.rolandhuon.clashofclans.service;
 
-import com.rolandhuon.clashofclans.config.GameConfiguration;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
 import com.rolandhuon.clashofclans.model.BattleRecord;
 import com.rolandhuon.clashofclans.repository.BattleRecordRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
 
 @Service

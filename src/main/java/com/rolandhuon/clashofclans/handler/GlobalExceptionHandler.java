@@ -19,25 +19,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse onIllegalArgument(IllegalArgumentException e){
-        return new ErrorResponse(400, e.getMessage());
+        return new ErrorResponse(400, describe(e, "The request could not be accepted."));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse onIllegalState(IllegalStateException e){
-        return new ErrorResponse(400, e.getMessage());
+        return new ErrorResponse(400, describe(e, "The request could not be accepted."));
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse onNotFound(NotFoundException e){
-        return new ErrorResponse(404, e.getMessage());
+        return new ErrorResponse(404, describe(e, "Not found."));
     }
 
     @ExceptionHandler(InsufficientResourcesException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse onInsufficientResources(InsufficientResourcesException e){
-        return new ErrorResponse(409, e.getMessage());
+        return new ErrorResponse(409, describe(e, "The request conflicts with the current state."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -61,5 +61,10 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse onUnreadableBody(HttpMessageNotReadableException e){
         return new ErrorResponse(400, "Malformed JSON body.");
+    }
+
+    private static String describe(Exception e, String fallback) {
+        String message = e.getMessage();
+        return (message == null || message.isBlank()) ? fallback : message;
     }
 }

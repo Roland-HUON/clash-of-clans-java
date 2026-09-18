@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/building-types")
 public class BuildingTypeController {
         @Operation(summary = "List building types",
-            description = "Returns the nineteen buildings with their maximum count and level, their build cost and currency, whether they are a defence, a resource building or a camp, and what a defence is allowed to shoot at.")
+            description = "Returns the twenty-one buildings with their maximum count and level, their build cost and currency, whether they are a defence, a resource building or a camp, and what a defence is allowed to shoot at.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
             @ApiResponse(responseCode = "429", description = "Rate limit exceeded: more than 60 requests in a minute from this client.")

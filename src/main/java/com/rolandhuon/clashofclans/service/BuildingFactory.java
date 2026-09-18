@@ -24,7 +24,8 @@ public class BuildingFactory {
             case CANNON, ARCHER_TOWER, MORTAR, WIZARD_TOWER, AIR_DEFENSE, HIDDEN_TESLA,
                  RICOCHET_CANNON, MULTI_ARCHER_TOWER, MULTI_GEAR_TOWER, MONOLITH -> new DefensiveBuilding(type, level);
             case SPELL_FACTORY -> new SpellFactory(level);
-            case GOLD_MINE, ELIXIR_COLLECTOR, GOLD_STORAGE, ELIXIR_STORAGE -> new ResourceBuilding(type, level);
+            case GOLD_MINE, ELIXIR_COLLECTOR, DARK_ELIXIR_DRILL,
+                 GOLD_STORAGE, ELIXIR_STORAGE, DARK_ELIXIR_STORAGE -> new ResourceBuilding(type, level);
             case PET_HOUSE -> new PetHouse(level);
         };
     }

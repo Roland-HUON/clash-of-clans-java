@@ -152,6 +152,9 @@ public class DataSeeder implements CommandLineRunner {
         add(village, BuildingType.GOLD_STORAGE, capped(BuildingType.GOLD_STORAGE, tier - 1), Math.max(1, tier - 3));
         add(village, BuildingType.ELIXIR_STORAGE, capped(BuildingType.ELIXIR_STORAGE, tier - 1), Math.max(1, tier - 3));
 
+        add(village, BuildingType.DARK_ELIXIR_DRILL, capped(BuildingType.DARK_ELIXIR_DRILL, tier - 2), Math.max(0, tier - 3));
+        add(village, BuildingType.DARK_ELIXIR_STORAGE, capped(BuildingType.DARK_ELIXIR_STORAGE, tier - 2), tier >= 4 ? 1 : 0);
+
         add(village, BuildingType.MILITARY_CAMP, capped(BuildingType.MILITARY_CAMP, tier * 2), Math.min(tier, 4));
     }
 

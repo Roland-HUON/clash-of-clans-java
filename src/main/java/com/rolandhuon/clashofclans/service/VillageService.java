@@ -1,7 +1,7 @@
 package com.rolandhuon.clashofclans.service;
 
 import com.rolandhuon.clashofclans.domain.building.BuildingType;
-import com.rolandhuon.clashofclans.dto.AddBuildingRequest;
+import com.rolandhuon.clashofclans.dto.BuildingRequest;
 import com.rolandhuon.clashofclans.dto.VillageRequest;
 import com.rolandhuon.clashofclans.model.Player;
 import com.rolandhuon.clashofclans.domain.common.ResourceType;
@@ -13,6 +13,7 @@ import com.rolandhuon.clashofclans.repository.VillageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.util.List;
 
 @Service
@@ -20,13 +21,16 @@ public class VillageService {
 
     private final VillageRepository villageRepository;
     private final PlayerRepository playerRepository;
+    private final Clock clock;
     private final VillageBuildingRepository buildingRepository;
 
     public VillageService(VillageRepository villageRepository,
                           PlayerRepository playerRepository,
+                          Clock clock,
                           VillageBuildingRepository buildingRepository) {
         this.villageRepository = villageRepository;
         this.playerRepository = playerRepository;
+        this.clock = clock;
         this.buildingRepository = buildingRepository;
     }
 
@@ -63,14 +67,14 @@ public class VillageService {
     }
 
     @Transactional
-    public VillageBuilding addBuilding(Long villageId, AddBuildingRequest request) {
+    public VillageBuilding addBuilding(Long villageId, BuildingRequest request) {
         Village village = villageRepository.findById(villageId)
                 .orElseThrow(() -> new NotFoundException("Village", villageId));
 
         BuildingType type = BuildingType.from(request.type());
-        payForBuilding(village.getPlayer(), type);
+        payForBuilding(village.getPlayer(), type, request.level());
 
-        VillageBuilding building = new VillageBuilding(type, request.level());
+        VillageBuilding building = new VillageBuilding(type, request.level(), clock.instant());
         village.addBuilding(building);
 
         return buildingRepository.save(building);
@@ -82,9 +86,9 @@ public class VillageService {
         villageRepository.deleteById(id);
     }
 
-    private void payForBuilding(Player owner, BuildingType type) {
+    private void payForBuilding(Player owner, BuildingType type, int level) {
         ResourceType resource = type.upgradeResource();
-        int cost = type.buildCost();
+        int cost = type.costUpTo(level);
         long balance = owner.balanceOf(resource);
 
         if (balance < cost) {

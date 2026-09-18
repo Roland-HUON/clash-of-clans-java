@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.domain.building;
 
+import com.rolandhuon.clashofclans.domain.common.AttackProfile;
 import com.rolandhuon.clashofclans.domain.common.Attacker;
 import com.rolandhuon.clashofclans.domain.common.Damageable;
 import com.rolandhuon.clashofclans.domain.common.Mobile;
@@ -18,6 +19,11 @@ public class DefensiveBuilding extends AbstractBuilding implements Attacker {
     @Override
     public int getDps() {
         return getType().damageAt(getLevel());
+    }
+
+    @Override
+    public AttackProfile attackProfile() {
+        return getType().attackProfile();
     }
 
     @Override
