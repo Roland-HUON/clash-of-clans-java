@@ -22,8 +22,4 @@ public record AttackProfile(double range, AttackType type, double splashRadius) 
     public int splashTargets(){
         return isSplash() ? 1 + (int) Math.round(splashRadius) : 0;
     }
-
-    public boolean isMelee(){
-        return range <= 1.0;
-    }
 }

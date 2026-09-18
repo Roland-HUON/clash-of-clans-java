@@ -72,6 +72,22 @@ class BattleServiceTest {
         }
 
         @Test
+        @DisplayName("A defence picks its target through the same strategies as a troop.")
+        void defencesGoThroughTheSameStrategies() {
+            Village village = new Village();
+            village.addBuilding(new DefensiveBuilding(BuildingType.CANNON, 1));
+            Troop barbarian = troop(TroopType.BARBARIAN, TroopType.BARBARIAN.maxLevel());
+
+            fullyEquipped(1).fight(List.of(barbarian), village);
+
+            assertThat(BuildingType.CANNON.targetingMode())
+                    .isEqualTo(com.rolandhuon.clashofclans.domain.battle.TargetingMode.FIRST_ALIVE);
+            assertThat(barbarian.getHp())
+                    .as("the cannon found a target through its declared mode")
+                    .isEqualTo(barbarian.getMaxHp() - BuildingType.CANNON.damageAt(1));
+        }
+
+        @Test
         @DisplayName("A missing strategy is rejected at construction, not during a battle.")
         void rejectsAnIncompleteSetOfStrategies() {
             assertThatThrownBy(() -> battleService(50, new FirstAliveTargeting()))

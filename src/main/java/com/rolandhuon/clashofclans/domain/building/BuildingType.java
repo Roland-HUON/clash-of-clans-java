@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.domain.building;
 
+import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
 import com.rolandhuon.clashofclans.domain.common.AttackProfile;
 import com.rolandhuon.clashofclans.domain.common.EntityType;
 import com.rolandhuon.clashofclans.domain.common.Movement;
@@ -240,44 +241,46 @@ public enum BuildingType implements EntityType {
     private final List<Integer> productionByLevel;
     private final ResourceType producedResource;
     private final AttackProfile attackProfile;
+    private final TargetingMode targetingMode;
     private final List<Integer> storageByLevel;
     private final ResourceType storedResource;
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource, List<BuildingStats> statsByLevel){
         this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE,
-                List.of(), null, AttackProfile.single(0), List.of(), null);
+                List.of(), null, AttackProfile.single(0), TargetingMode.FIRST_ALIVE, List.of(), null);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, HousingCapacity capacity){
         this(label, maxCount, upgradeResource, statsByLevel, capacity.byLevel(), List.of(), TargetScope.NONE,
-                List.of(), null, AttackProfile.single(0), List.of(), null);
+                List.of(), null, AttackProfile.single(0), TargetingMode.FIRST_ALIVE, List.of(), null);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, Storage storage){
         this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE,
-                List.of(), null, AttackProfile.single(0), storage.capacityByLevel(), storage.resource());
+                List.of(), null, AttackProfile.single(0), TargetingMode.FIRST_ALIVE, storage.capacityByLevel(), storage.resource());
         requireSameSize(label, "storage", storage.capacityByLevel(), statsByLevel);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, Production production){
         this(label, maxCount, upgradeResource, statsByLevel, List.of(), List.of(), TargetScope.NONE,
-                production.perHourByLevel(), production.resource(), AttackProfile.single(0), List.of(), null);
+                production.perHourByLevel(), production.resource(), AttackProfile.single(0), TargetingMode.FIRST_ALIVE, List.of(), null);
         requireSameSize(label, "production", production.perHourByLevel(), statsByLevel);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource,
                  List<BuildingStats> statsByLevel, Firepower firepower){
         this(label, maxCount, upgradeResource, statsByLevel, List.of(), firepower.byLevel(), firepower.targets(),
-                List.of(), null, firepower.profile(), List.of(), null);
+                List.of(), null, firepower.profile(), firepower.targeting(), List.of(), null);
     }
 
     BuildingType(String label, int maxCount, ResourceType upgradeResource, List<BuildingStats> statsByLevel,
                  List<Integer> housingCapacityByLevel, List<Integer> damageByLevel, TargetScope targetScope,
                  List<Integer> productionByLevel, ResourceType producedResource,
-                 AttackProfile attackProfile, List<Integer> storageByLevel, ResourceType storedResource){
+                 AttackProfile attackProfile, TargetingMode targetingMode,
+                 List<Integer> storageByLevel, ResourceType storedResource){
         if(statsByLevel.isEmpty()) throw new IllegalArgumentException(label + " must declare at least one level.");
         if(damageByLevel.isEmpty() != (targetScope == TargetScope.NONE)){
             throw new IllegalArgumentException(label + ": a building deals damage exactly when it has something to shoot at");
@@ -294,6 +297,7 @@ public enum BuildingType implements EntityType {
         this.productionByLevel = List.copyOf(productionByLevel);
         this.producedResource = producedResource;
         this.attackProfile = attackProfile;
+        this.targetingMode = targetingMode;
         this.storageByLevel = List.copyOf(storageByLevel);
         this.storedResource = storedResource;
     }
@@ -379,6 +383,10 @@ public enum BuildingType implements EntityType {
 
     public AttackProfile attackProfile(){
         return attackProfile;
+    }
+
+    public TargetingMode targetingMode(){
+        return targetingMode;
     }
 
     public boolean stores(){

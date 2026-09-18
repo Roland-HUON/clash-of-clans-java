@@ -39,7 +39,7 @@ public class UpgradeController {
     }
 
         @Operation(summary = "Upgrade a building",
-            description = "Raises the building by one level and charges the owner in that building's own currency: gold for the defences, dark elixir for the Monolith, the Hero Hall and the Pet House, elixir for the rest.")
+            description = "Raises the building by one level and charges the owner in that building's own currency: each building is charged in the currency its own type declares, which is not always the one it produces - a Gold Mine is paid for in elixir, an Elixir Collector in gold.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The building went up a level and is returned with its new stats."),
             @ApiResponse(responseCode = "400", description = "The building is already at its maximum level."),

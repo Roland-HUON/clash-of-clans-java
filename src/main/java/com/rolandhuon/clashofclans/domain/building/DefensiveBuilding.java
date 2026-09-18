@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.domain.building;
 
+import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
 import com.rolandhuon.clashofclans.domain.common.AttackProfile;
 import com.rolandhuon.clashofclans.domain.common.Attacker;
 import com.rolandhuon.clashofclans.domain.common.Damageable;
@@ -19,6 +20,11 @@ public class DefensiveBuilding extends AbstractBuilding implements Attacker {
     @Override
     public int getDps() {
         return getType().damageAt(getLevel());
+    }
+
+    @Override
+    public TargetingMode targetingMode() {
+        return getType().targetingMode();
     }
 
     @Override

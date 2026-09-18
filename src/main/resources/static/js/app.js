@@ -64,7 +64,7 @@ const state = {
 const scene = new VillageScene($('canvasHost'));
 const format = (n) => new Intl.NumberFormat('en').format(n ?? 0);
 const LEADERBOARD_SIZE = 25;
-const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (c) =>
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const compact = (n) => (Math.abs(n ?? 0) < 100_000
   ? format(n)
@@ -77,6 +77,7 @@ for (const [id, icon] of [['hudGold', GOLD], ['hudElixir', ELIXIR], ['hudDark', 
 }
 
 let toastTimer = null;
+let viewToken = 0;
 
 function setStatus(text, kind = '') {
   el.status.textContent = text;
@@ -110,12 +111,13 @@ scene.onHover = (hit) => {
 
   const building = hit.building;
   const type = state.buildingTypes.get(building.type) || {};
+  const blast = type.splashTargets > 0 ? `, splash +${type.splashTargets}` : '';
   const reach = type.defensive
-    ? `fires at ${String(type.targets).replace('_', ' ').toLowerCase()}`
+    ? `fires at ${String(type.targets).replace('_', ' ').toLowerCase()}${blast}`
     : type.resource ? 'resource building' : type.camp ? 'holds troops' : 'not a defence';
 
   el.tooltip.innerHTML =
-    `${escape(building.label)} <small>level ${building.level}/${building.maxLevel} · ${format(building.hitPoints)} hp · ${reach}</small>`;
+    `${escapeHtml(building.label)} <small>level ${building.level}/${building.maxLevel} · ${format(building.hitPoints)} hp · ${reach}</small>`;
   el.tooltip.removeAttribute('hidden');
 
   const box = el.tooltip.parentElement.getBoundingClientRect();
@@ -135,7 +137,7 @@ async function boot() {
     buildingTypes.forEach((t) => state.buildingTypes.set(t.id, t));
     state.players = players;
 
-    el.playerSelect.innerHTML = players.map((p) => `<option value="${p.id}">${escape(p.name)}</option>`).join('');
+    el.playerSelect.innerHTML = players.map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
 
     await loadTargets();
     await selectPlayer(players[0].id);
@@ -154,10 +156,13 @@ async function loadTargets() {
 }
 
 async function selectPlayer(playerId) {
+  const token = ++viewToken;
   const [player, villages, troops, rank, leaderboard] = await Promise.all([
     api.player(playerId), api.villages(playerId), api.troops(playerId),
     api.rank(playerId), api.leaderboard(LEADERBOARD_SIZE)
   ]);
+
+  if (token !== viewToken) return;
 
   state.player = player;
   state.unlocked = troops;
@@ -165,7 +170,7 @@ async function selectPlayer(playerId) {
   renderHud(player, rank);
   renderLeaderboard(leaderboard, player);
 
-  el.villageSelect.innerHTML = villages.map((v) => `<option value="${v.id}">${escape(v.name)}</option>`).join('');
+  el.villageSelect.innerHTML = villages.map((v) => `<option value="${v.id}">${escapeHtml(v.name)}</option>`).join('');
 
   renderTroops();
   renderArmyPicker();
@@ -197,7 +202,7 @@ function renderHud(player, rank) {
 function renderLeaderboard(entries, player) {
   el.leaderboard.innerHTML = entries.map((entry) =>
     `<li class="${entry.playerId === player.id ? 'me' : ''}" data-player="${entry.playerId}">
-       ${escape(entry.name)}<span>${format(entry.trophies)}</span>
+       ${escapeHtml(entry.name)}<span>${format(entry.trophies)}</span>
      </li>`).join('');
 
   for (const row of el.leaderboard.querySelectorAll('li')) {
@@ -206,7 +211,9 @@ function renderLeaderboard(entries, player) {
 }
 
 async function showVillage(villageId, { home = false } = {}) {
+  const token = ++viewToken;
   const village = await api.village(villageId);
+  if (token !== viewToken) return;
 
   state.shownVillage = village;
   state.scouting = !home;
@@ -284,7 +291,7 @@ function renderBuildings(village, editable) {
     return `<li data-id="${building.id}">
       <i class="dot ${familyOf(type)}"></i>
       <span class="row-name">
-        <b>${escape(building.label)}</b>
+        <b>${escapeHtml(building.label)}</b>
         <small>level ${building.level}/${building.maxLevel} · ${format(building.hitPoints)} hp</small>
       </span>
       ${upgradeButton(building, editable, 'building')}
@@ -398,7 +405,7 @@ function renderBuildOptions(village, editable) {
     .sort((a, b) => a.label.localeCompare(b.label));
 
   el.buildType.innerHTML = available
-    .map((type) => `<option value="${type.id}">${escape(type.label)} (${counts.get(type.id) || 0}/${type.maxCount}) — ${format(type.buildCost)} ${RESOURCE_LABEL[type.upgradeResource]}</option>`)
+    .map((type) => `<option value="${type.id}">${escapeHtml(type.label)} (${counts.get(type.id) || 0}/${type.maxCount}) — ${format(type.buildCost)} ${RESOURCE_LABEL[type.upgradeResource]}</option>`)
     .join('');
 
   el.buildBtn.disabled = !editable || available.length === 0;
@@ -447,7 +454,7 @@ function renderTroops(editable = !state.scouting) {
     return `<li>
       <i class="dot ${tag}"></i>
       <span class="row-name">
-        <b>${escape(troop.label)}</b>
+        <b>${escapeHtml(troop.label)}</b>
         <small>level ${troop.level}/${troop.maxLevel} · ${format(troop.hitPoints)} hp · ${troop.damage} dps</small>
       </span>
       ${upgradeButton(troop, editable, 'troop')}
@@ -461,7 +468,7 @@ function renderTroops(editable = !state.scouting) {
 function renderTargets() {
   const options = state.targets.filter((v) => v.playerId !== state.player.id);
   el.targetSelect.innerHTML = options
-    .map((v) => `<option value="${v.id}">${escape(v.owner ? v.owner.name : '?')} — ${escape(v.name)}</option>`).join('');
+    .map((v) => `<option value="${v.id}">${escapeHtml(v.owner ? v.owner.name : '?')} — ${escapeHtml(v.name)}</option>`).join('');
   if (!options.length) el.raidHint.textContent = 'No other village to raid.';
   renderTargetLoot();
 }
@@ -495,7 +502,7 @@ function renderArmyPicker() {
     return `<li>
       <i class="dot ${tag}"></i>
       <span class="row-name">
-        <b>${escape(troop.label)}</b>
+        <b>${escapeHtml(troop.label)}</b>
         <small>level ${troop.level} · ${type.housingSpace} space</small>
       </span>
       <input type="number" min="0" value="0" data-type="${troop.type}">
@@ -640,7 +647,6 @@ function showResult(result, army) {
     .join('');
 
   const looted = result.lootedGold + result.lootedElixir + result.lootedDarkElixir;
-  el.ovLoot.insertAdjacentHTML('afterend', '');
   el.overlayTitle.title = looted === 0 ? 'That village had nothing left to steal.' : '';
 
   el.overlay.removeAttribute('hidden');
@@ -650,10 +656,11 @@ async function scoutPlayer(playerId) {
   if (state.busy) return;
   try {
     if (playerId === state.player.id) {
-      await showVillage(state.homeVillage.id, { home: true });
+      if (state.homeVillage) await showVillage(state.homeVillage.id, { home: true });
       return;
     }
-    const villages = await api.villages(playerId);
+    const known = state.targets.filter((v) => v.playerId === playerId);
+    const villages = known.length ? known : await api.villages(playerId);
     if (!villages.length) return toast('That chief has no village yet.');
     await showVillage(villages[0].id);
   } catch (error) {

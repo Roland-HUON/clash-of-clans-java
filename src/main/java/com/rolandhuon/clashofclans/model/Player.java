@@ -108,8 +108,5 @@ public class Player {
     public void setDarkElixir(long darkElixir) { this.darkElixir = darkElixir; }
 
     public int getTrophies() { return trophies; }
-    public void setTrophies(int trophies) { this.trophies = trophies; }
 
-    public List<Village> getVillages() { return villages; }
-    public List<PlayerTroop> getTroops() { return troops; }
 }

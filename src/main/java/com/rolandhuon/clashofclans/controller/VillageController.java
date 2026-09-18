@@ -109,10 +109,10 @@ public class VillageController {
     }
 
     @Operation(summary = "Put up a building",
-            description = "Charges the owner the build cost of that type and adds the building to the village. A type cannot be built beyond its maximum count.")
+            description = "Adds the building to the village and charges the owner the whole ladder up to the level asked for - the build cost plus every upgrade below it - so a level-8 Cannon costs exactly what a level-1 Cannon upgraded seven times costs. A type cannot be built beyond its maximum count.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "The building was put up and is returned with its generated id."),
-            @ApiResponse(responseCode = "400", description = "Unknown building type, malformed body, or that type has reached its maximum count."),
+            @ApiResponse(responseCode = "400", description = "Unknown building type, malformed body, a level outside the type's range, or that type has reached its maximum count."),
             @ApiResponse(responseCode = "404", description = "No village carries that id."),
             @ApiResponse(responseCode = "409", description = "The owner cannot afford the build cost."),
             @ApiResponse(responseCode = "429", description = "Rate limit exceeded: more than 60 requests in a minute from this client.")

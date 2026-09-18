@@ -11,11 +11,11 @@
     },
     {
       "key": "playerId",
-      "value": "1"
+      "value": "2"
     },
     {
       "key": "villageId",
-      "value": "1"
+      "value": "2"
     },
     {
       "key": "buildingId",
@@ -24,6 +24,14 @@
     {
       "key": "troopId",
       "value": "1"
+    },
+    {
+      "key": "throwawayPlayerId",
+      "value": ""
+    },
+    {
+      "key": "throwawayVillageId",
+      "value": ""
     }
   ],
   "item": [
@@ -210,7 +218,20 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('throwawayPlayerId', body.id);",
+                  "pm.test('created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Update a player",
@@ -236,7 +257,7 @@
             "description": "Full replacement. Trophies are left untouched.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Roland\",\n  \"level\": 13,\n  \"gold\": 300000,\n  \"elixir\": 150000,\n  \"darkElixir\": 9000\n}",
+              "raw": "{\n  \"name\": \"Dutofa\",\n  \"level\": 10,\n  \"gold\": 300000,\n  \"elixir\": 200000,\n  \"darkElixir\": 9000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -252,17 +273,17 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/players/{{playerId}}",
+              "raw": "{{baseUrl}}/api/players/{{throwawayPlayerId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "players",
-                "{{playerId}}"
+                "{{throwawayPlayerId}}"
               ]
             },
-            "description": "204 No Content. 404 when already deleted."
+            "description": "Deletes the chief created by \"Create a player\", not a seeded one, so the collection can be run from top to bottom without destroying the data every other request depends on."
           },
           "response": []
         }
@@ -309,7 +330,19 @@
             },
             "description": ""
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const villages = pm.response.json();",
+                  "if (villages.length) pm.collectionVariables.set('villageId', villages[0].id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Create a village",
@@ -344,7 +377,19 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('throwawayVillageId', body.id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get a village",
@@ -364,7 +409,22 @@
             },
             "description": "Includes every building with level, hit points, housing capacity and upgrade cost."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const village = pm.response.json();",
+                  "const affordable = village.buildings",
+                  "    .filter((b) => b.level < b.maxLevel)",
+                  "    .sort((a, b) => a.nextUpgradeCost - b.nextUpgradeCost)[0];",
+                  "if (affordable) pm.collectionVariables.set('buildingId', affordable.id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Add a building",
@@ -388,36 +448,16 @@
                 "buildings"
               ]
             },
-            "description": "400 when the maxCount of that type is already reached.",
+            "description": "The owner is charged the whole ladder up to the level asked for. A type already at its maximum count answers 400.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"type\": \"MILITARY_CAMP\",\n  \"level\": 1\n}",
+              "raw": "{\n  \"type\": \"GOLD_MINE\",\n  \"level\": 1\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete a village",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/villages/{{villageId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "villages",
-                "{{villageId}}"
-              ]
-            },
-            "description": ""
           },
           "response": []
         },
@@ -438,6 +478,26 @@
                 "collect"
               ]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a village",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{throwawayVillageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{throwawayVillageId}}"
+              ]
+            },
+            "description": "Deletes the village created above, never a seeded one."
           },
           "response": []
         }
@@ -466,7 +526,22 @@
             },
             "description": "Research level per troop type. 404 when the player does not exist."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const troops = pm.response.json();",
+                  "const affordable = troops",
+                  "    .filter((t) => t.level < t.maxLevel)",
+                  "    .sort((a, b) => a.nextUpgradeCost - b.nextUpgradeCost)[0];",
+                  "if (affordable) pm.collectionVariables.set('troopId', affordable.id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Upgrade a building",

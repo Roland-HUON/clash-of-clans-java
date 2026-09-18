@@ -36,16 +36,14 @@ public class VillageService {
 
     @Transactional(readOnly = true)
     public List<Village> findAll() {
-        return villageRepository.findAllByOrderByIdAsc().stream().map(this::hydrate).toList();
+        return villageRepository.findAllWithBuildings();
     }
 
     @Transactional(readOnly = true)
     public List<Village> findByPlayer(Long playerId) {
         if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
 
-        List<Village> villages = villageRepository.findByPlayerId(playerId);
-        villages.forEach(this::hydrate);
-        return villages;
+        return villageRepository.findByPlayerIdWithBuildings(playerId);
     }
 
     @Transactional(readOnly = true)
@@ -68,7 +66,7 @@ public class VillageService {
 
     @Transactional
     public VillageBuilding addBuilding(Long villageId, BuildingRequest request) {
-        Village village = villageRepository.findById(villageId)
+        Village village = villageRepository.findByIdWithBuildings(villageId)
                 .orElseThrow(() -> new NotFoundException("Village", villageId));
 
         BuildingType type = BuildingType.from(request.type());

@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.domain.battle.BattleKind;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
 import com.rolandhuon.clashofclans.domain.battle.Loot;
 import com.rolandhuon.clashofclans.domain.battle.TrophyExchange;
@@ -92,7 +93,7 @@ public class RaidService {
         villageRepository.save(target);
         playerRepository.save(attacker);
         playerRepository.save(defender);
-        battleHistoryService.save(result);
+        battleHistoryService.save(BattleKind.RAID, result);
 
         return new RaidOutcome(result, loot, trophies, attacker.getTrophies(), defender.getTrophies());
     }

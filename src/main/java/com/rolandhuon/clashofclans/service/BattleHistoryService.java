@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.domain.battle.BattleKind;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
 import com.rolandhuon.clashofclans.model.BattleRecord;
 import com.rolandhuon.clashofclans.repository.BattleRecordRepository;
@@ -19,8 +20,9 @@ public class BattleHistoryService {
         this.clock = clock;
     }
 
-    public BattleRecord save(BattleResult result){
+    public BattleRecord save(BattleKind kind, BattleResult result){
         BattleRecord battleRecord = new BattleRecord(
+                kind,
                 clock.instant(),
                 result.destructionPercentage(),
                 result.stars(),
@@ -30,6 +32,6 @@ public class BattleHistoryService {
     }
 
     public List<BattleRecord> findAll(){
-        return battleRecordRepository.findAll();
+        return battleRecordRepository.findAllByOrderByIdAsc();
     }
 }

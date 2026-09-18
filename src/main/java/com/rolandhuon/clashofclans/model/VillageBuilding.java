@@ -70,8 +70,6 @@ public class VillageBuilding {
     }
 
 
-    public Instant getLastCollectedAt() { return lastCollectedAt; }
-
     public Long getId() { return id; }
     public BuildingType getType() { return type; }
 

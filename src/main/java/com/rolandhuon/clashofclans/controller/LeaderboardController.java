@@ -26,9 +26,10 @@ public class LeaderboardController {
     }
 
         @Operation(summary = "Read the leaderboard",
-            description = "Returns the players ordered by trophies, then by name. Pass limit to keep only the top of the table.")
+            description = "Returns the players ordered by trophies, then by name. Without a limit it returns the top 10; limit must be between 1 and 100.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
+            @ApiResponse(responseCode = "400", description = "The limit is outside 1..100."),
             @ApiResponse(responseCode = "429", description = "Rate limit exceeded: more than 60 requests in a minute from this client.")
     })
     @GetMapping("/api/leaderboard")

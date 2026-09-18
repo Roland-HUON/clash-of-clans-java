@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import com.rolandhuon.clashofclans.domain.battle.BattleKind;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
 import com.rolandhuon.clashofclans.domain.building.BuildingType;
 import com.rolandhuon.clashofclans.domain.troop.Troop;
@@ -61,12 +62,12 @@ public class BattleController {
         }
 
         BattleResult result = battleService.fight(army, village);
-        battleHistoryService.save(result);
+        battleHistoryService.save(BattleKind.SIMULATION, result);
         return BattleResultDto.from(result);
     }
 
         @Operation(summary = "List past battles",
-            description = "Returns every battle recorded so far, simulations and raids alike, newest last.")
+            description = "Returns every battle recorded so far, simulations and raids alike. No order is guaranteed and the two kinds are not distinguished.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
             @ApiResponse(responseCode = "429", description = "Rate limit exceeded: more than 60 requests in a minute from this client.")

@@ -7,6 +7,8 @@ import com.rolandhuon.clashofclans.model.PlayerTroop;
 import com.rolandhuon.clashofclans.model.Village;
 import com.rolandhuon.clashofclans.model.VillageBuilding;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import java.util.List;
 @Component
 @Order(1)
 public class DataSeeder implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
     private static final long UNLIMITED = 999_999_999_999L;
 
@@ -85,7 +89,7 @@ public class DataSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (playerRepository.count() > 0) {
-            System.out.println("[seed] Database already populated, nothing to do.");
+            log.info("Database already populated, nothing to do.");
             return;
         }
 
@@ -94,7 +98,7 @@ public class DataSeeder implements CommandLineRunner {
         ROSTER.forEach(chief -> players.add(challenger(chief)));
 
         playerRepository.saveAll(players);
-        System.out.println("[seed] " + players.size() + " players created, Roland on top with 5110 trophies.");
+        log.info("{} players created, Roland on top with 5110 trophies.", players.size());
     }
 
     private Player champion() {

@@ -1,6 +1,10 @@
 package com.rolandhuon.clashofclans.model;
 
+import com.rolandhuon.clashofclans.domain.battle.BattleKind;
+
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,11 +17,15 @@ public class BattleRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Instant playedAt;
+
+    @Enumerated(EnumType.STRING)
+    private BattleKind kind;
     private int destructionPercentage, stars, turns, survivingTroops;
 
     protected BattleRecord(){}
 
-    public BattleRecord(Instant playedAt, int destructionPercentage, int stars, int turns, int survivingTroops) {
+    public BattleRecord(BattleKind kind, Instant playedAt, int destructionPercentage, int stars, int turns, int survivingTroops) {
+        this.kind = kind;
         this.playedAt = playedAt;
         this.destructionPercentage = destructionPercentage;
         this.stars = stars;
@@ -27,6 +35,10 @@ public class BattleRecord {
 
     public Long getId() {
         return id;
+    }
+
+    public BattleKind getKind() {
+        return kind;
     }
 
     public Instant getPlayedAt() {

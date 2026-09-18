@@ -7,6 +7,7 @@ import com.rolandhuon.clashofclans.model.PlayerTroop;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
 import com.rolandhuon.clashofclans.repository.PlayerTroopRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,11 +22,13 @@ public class PlayerService {
         this.troopRepository = troopRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<PlayerTroop> findTroopsOf(Long playerId) {
         if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
         return troopRepository.findByPlayerId(playerId);
     }
 
+    @Transactional
     public Player create(PlayerRequest request) {
         Player player = new Player(
                 request.name(),
@@ -41,19 +44,23 @@ public class PlayerService {
         return playerRepository.save(player);
     }
 
+    @Transactional(readOnly = true)
     public List<Player> findByName(String name) {
         return playerRepository.findByName(name);
     }
 
+    @Transactional(readOnly = true)
     public List<Player> findAll() {
         return playerRepository.findAllByOrderByIdAsc();
     }
 
+    @Transactional(readOnly = true)
     public Player findById(Long id) {
         return playerRepository.findById(id)
                 .orElseThrow(() -> new PlayerNotFoundException(id));
     }
 
+    @Transactional
     public Player update(Long id, PlayerRequest request) {
         Player player = findById(id);
 
@@ -66,6 +73,7 @@ public class PlayerService {
         return playerRepository.save(player);
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!playerRepository.existsById(id)) {
             throw new PlayerNotFoundException(id);

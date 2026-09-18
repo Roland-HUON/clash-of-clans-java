@@ -304,4 +304,13 @@ class BuildingTypeTest {
         assertThatThrownBy(() -> BuildingType.CANNON.costUpTo(BuildingType.CANNON.maxLevel() + 1))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @ParameterizedTest
+    @EnumSource(BuildingType.class)
+    @DisplayName("Every defence says how it picks a target, and only a defence needs to.")
+    void everyDefenceDeclaresItsTargeting(BuildingType type) {
+        assertThat(type.targetingMode())
+                .as("%s targeting mode", type.label())
+                .isNotNull();
+    }
 }

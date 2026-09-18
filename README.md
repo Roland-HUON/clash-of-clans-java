@@ -7,8 +7,15 @@ with three different currencies, and players raid each other for loot and trophi
 
 ## Requirements
 
+- **JDK 21**, on your `PATH` or as `JAVA_HOME`. The Maven wrapper downloads Maven,
+  not a JDK: `.mvn/wrapper/maven-wrapper.properties` is `distributionType=only-script`
+  and the build declares no toolchain, so `./mvnw` needs a Java 21 already installed.
 - **Docker Desktop**, running. It hosts PostgreSQL.
-- Nothing else. Java and Maven come with the project through the Maven wrapper.
+
+Maven itself you do not need: `./mvnw` fetches it on first use.
+
+> Only the all-in-Docker route below needs nothing but Docker — it builds inside
+> `eclipse-temurin:21-jdk`.
 
 ## Run it
 
@@ -47,8 +54,17 @@ The first build downloads a JDK image and the dependencies, so allow a few minut
 | http://localhost:8080/v3/api-docs | the OpenAPI specification |
 | http://localhost:8080/api/troop-types | a quick check that it answers |
 
-Import `postman/clash-of-clans.postman_collection.json` into Postman for the full
-set of requests, grouped by topic.
+Two endpoints worth knowing that the panels above do not surface: `GET /api/battles`
+returns every battle recorded so far, oldest first, each tagged `SIMULATION` or
+`RAID`, and
+`GET /api/players?name=Roland` filters players on an exact name. `GET /api/leaderboard`
+returns the top **10** unless you pass `?limit=`, which must be between 1 and 100.
+
+Import `postman/clash-of-clans.postman_collection.json` into Postman: 25 requests
+covering all 24 endpoints, grouped by topic. It is meant to be **run top to bottom** —
+each request captures what the next one needs (the id of the village it just listed,
+the cheapest building it can afford to upgrade), and the two delete requests only ever
+remove the player and the village the collection created itself, never a seeded one.
 
 A chief created through `POST /api/players` starts with every troop type unlocked at
 level one, so a new account can raid immediately and grow from the laboratory.
@@ -130,11 +146,12 @@ limit.
 | Currency | Pays for |
 | --- | --- |
 | `GOLD` | every defence except the Monolith, plus the Elixir Collector and Elixir Storage |
-| `ELIXIR` | troops, the laboratory, the camps, the Gold Mine and Gold Storage |
+| `ELIXIR` | troops, the laboratory, the camps, the spell factory, the Gold Mine and Gold Storage, and both dark elixir buildings |
 | `DARK_ELIXIR` | the Monolith, the Hero Hall, the Pet House and the Hog Rider |
 
-The Dark Elixir Drill and the Dark Elixir Storage are paid for in elixir, like the
-other mines, but the drill produces dark elixir.
+Note that what a building is paid for and what it produces are two different things:
+the Gold Mine is paid for in elixir, the Elixir Collector in gold, and the Dark Elixir
+Drill in elixir.
 
 Each type carries its own currency, so a single upgrade path handles all of them:
 `EntityType.upgradeResource()` says what to charge, `upgradeCostFrom(level)` says how much.
@@ -175,9 +192,12 @@ advances that producer's clock only by the whole minutes it was paid for, so cal
 `/collect` every few seconds neither pays twice nor throws away the minutes you had
 banked — a test walks both cases.
 
-The three storages are not decoration: a village can only hold as much of a currency
-as its storages for that currency allow. A harvest that would overflow them is
-truncated, while the owner's purse — what upgrades are paid from — has no ceiling.
+The three storages are not decoration: **once a village owns at least one storage for a
+currency**, it can hold no more of that currency than those storages allow, and a
+harvest that would overflow them is truncated. A village with no storage for a currency
+is not capped at zero — it is simply uncapped, which is what lets a freshly founded
+village bank anything at all. The owner's purse, what upgrades are paid from, never has
+a ceiling.
 
 `POST /api/villages/{id}/collect` empties every producer. What comes out lands in two
 places: the owner's **purse**, which is what upgrades and buildings are paid from, and
@@ -204,9 +224,10 @@ The clock is a `Clock` bean rather than a call to `Instant.now()` scattered arou
 | Dragon | 20 | **air** | `FIRST_ALIVE` | attacker |
 
 A targeting mode is not a `switch` in the battle loop: it is a key into the
-`TargetingStrategy` beans. `BattleService` refuses to start if a mode used by a
-troop type has no strategy, so a missing one is a startup failure, never a
-`NullPointerException` in the middle of a raid.
+`TargetingStrategy` beans, and **defences go through the same mechanism** — each
+`BuildingType` declares its own mode, all of them `FIRST_ALIVE` today. `BattleService`
+refuses to start if any mode used by a troop or a defence has no strategy, so a missing
+one is a startup failure, never a `NullPointerException` in the middle of a raid.
 
 A `SUPPORT` troop heals its weakest wounded ally instead of attacking.
 
@@ -342,6 +363,17 @@ Every endpoint carries a summary, a paragraph of description and the meaning of 
 status code it can return, written with `@Tag`, `@Operation` and `@ApiResponses` on
 the controllers. The eight groups are Players, Villages, Upgrades, Raids, Battles,
 Leaderboard, Troop types and Building types.
+
+## Performance notes
+
+`GET /api/villages` returns the fifty seeded villages in **one** statement: the
+repository fetch-joins the owner and the buildings rather than letting Hibernate walk
+each association. Without those joins the same call fired 51 queries — one for the
+list, one per village for its player.
+
+`BattleLogger` writes through SLF4J at `DEBUG`, so a three-hundred-troop raid no
+longer prints hundreds of lines from inside the transaction. Turn it on with
+`--logging.level.com.rolandhuon.clashofclans.app.BattleLogger=DEBUG`.
 
 ## Architecture
 

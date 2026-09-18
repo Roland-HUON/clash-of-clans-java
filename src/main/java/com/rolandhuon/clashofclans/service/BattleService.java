@@ -2,6 +2,7 @@ package com.rolandhuon.clashofclans.service;
 
 import com.rolandhuon.clashofclans.config.BattleProperties;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
+import com.rolandhuon.clashofclans.domain.building.BuildingType;
 import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
 import com.rolandhuon.clashofclans.domain.battle.TargetingStrategy;
 import com.rolandhuon.clashofclans.domain.common.Attacker;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class BattleService {
@@ -28,8 +30,11 @@ public class BattleService {
     public BattleService(CombatService combatService, List<TargetingStrategy>  strategies, BattleProperties battleProperties) {
         this.combatService = combatService;
         this.strategies = strategies.stream().collect(Collectors.toMap(TargetingStrategy::mode, s -> s));
-        List<TargetingMode> missing = Arrays.stream(TroopType.values())
-                .map(TroopType::targetingMode)
+        List<TargetingMode> missing = Stream.concat(
+                        Arrays.stream(TroopType.values()).map(TroopType::targetingMode),
+                        Arrays.stream(BuildingType.values())
+                                .filter(BuildingType::isDefensive)
+                                .map(BuildingType::targetingMode))
                 .distinct()
                 .filter(mode -> !this.strategies.containsKey(mode))
                 .toList();
@@ -68,10 +73,10 @@ public class BattleService {
     }
 
     private void returnFire(Village village, List<Troop> army) {
-        TargetingStrategy defenderStrategy = strategies.get(TargetingMode.FIRST_ALIVE);
-        if (defenderStrategy == null) return;
-
         for (Attacker defender : village.aliveDefenders()) {
+            TargetingStrategy defenderStrategy = strategies.get(defender.targetingMode());
+            if (defenderStrategy == null) continue;
+
             List<Damageable> reachableTroops = army.stream()
                     .filter(Troop::isAlive)
                     .map(Damageable.class::cast)
