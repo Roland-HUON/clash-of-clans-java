@@ -55,65 +55,114 @@ public enum TroopType implements EntityType {
             new TroopStats(76, 46, 70000)
     )),
     GIANT("Giant", 5, ELIXIR, DEFENSE_FIRST, GROUND, AttackProfile.single(1.0), List.of(
-            new TroopStats(300, 11, 0),
-            new TroopStats(360, 14, 2000),
-            new TroopStats(430, 17, 5000),
-            new TroopStats(520, 21, 12000),
-            new TroopStats(600, 24, 25000),
-            new TroopStats(690, 28, 50000)
+            new TroopStats(400, 12, 0),
+            new TroopStats(500, 15, 40000),
+            new TroopStats(600, 20, 150000),
+            new TroopStats(700, 24, 400000),
+            new TroopStats(900, 31, 800000),
+            new TroopStats(1100, 43, 1500000),
+            new TroopStats(1300, 55, 2300000),
+            new TroopStats(1500, 62, 2600000),
+            new TroopStats(1850, 70, 3400000),
+            new TroopStats(2000, 78, 5000000),
+            new TroopStats(2200, 86, 7500000),
+            new TroopStats(2400, 94, 10000000),
+            new TroopStats(2700, 104, 15000000),
+            new TroopStats(3000, 114, 25000000)
     )),
 
     GOBLIN("Goblin", 1, ELIXIR, RESOURCE_FIRST, GROUND, AttackProfile.single(0.4), List.of(
             new TroopStats(25, 11, 0),
-            new TroopStats(30, 14, 1500),
-            new TroopStats(36, 19, 4000),
-            new TroopStats(50, 24, 10000),
-            new TroopStats(65, 32, 20000),
-            new TroopStats(80, 42, 40000)
+            new TroopStats(30, 14, 45000),
+            new TroopStats(36, 19, 100000),
+            new TroopStats(50, 24, 500000),
+            new TroopStats(65, 32, 700000),
+            new TroopStats(80, 42, 1600000),
+            new TroopStats(105, 52, 2200000),
+            new TroopStats(126, 62, 3700000),
+            new TroopStats(146, 72, 8000000),
+            new TroopStats(166, 82, 26000000)
     )),
 
     BALLOON("Balloon", 5, ELIXIR, DEFENSE_FIRST, AIR, AttackProfile.splash(0.8, 1.2), List.of(
             new TroopStats(150, 25, 0),
-            new TroopStats(180, 32, 3000),
-            new TroopStats(216, 48, 8000),
-            new TroopStats(280, 72, 18000),
-            new TroopStats(390, 108, 35000),
-            new TroopStats(545, 162, 70000)
+            new TroopStats(180, 32, 100000),
+            new TroopStats(216, 48, 400000),
+            new TroopStats(280, 72, 720000),
+            new TroopStats(390, 108, 1300000),
+            new TroopStats(545, 162, 2750000),
+            new TroopStats(690, 198, 4400000),
+            new TroopStats(840, 236, 5000000),
+            new TroopStats(940, 256, 7000000),
+            new TroopStats(1040, 276, 10000000),
+            new TroopStats(1140, 290, 14000000),
+            new TroopStats(1240, 304, 17500000),
+            new TroopStats(1360, 326, 28000000)
     )),
 
     WIZARD("Wizard", 4, ELIXIR, FIRST_ALIVE, GROUND, AttackProfile.splash(3.0, 0.3), List.of(
             new TroopStats(75, 50, 0),
-            new TroopStats(90, 70, 4000),
-            new TroopStats(108, 90, 10000),
-            new TroopStats(130, 125, 22000),
-            new TroopStats(156, 170, 45000),
-            new TroopStats(190, 185, 90000)
+            new TroopStats(90, 70, 120000),
+            new TroopStats(108, 90, 300000),
+            new TroopStats(135, 125, 600000),
+            new TroopStats(165, 170, 1200000),
+            new TroopStats(180, 185, 2000000),
+            new TroopStats(195, 200, 2500000),
+            new TroopStats(210, 215, 3100000),
+            new TroopStats(230, 230, 4000000),
+            new TroopStats(250, 245, 5500000),
+            new TroopStats(270, 260, 10000000),
+            new TroopStats(290, 275, 11500000),
+            new TroopStats(310, 290, 16000000),
+            new TroopStats(330, 310, 27000000)
     )),
 
     HOG_RIDER("Hog Rider", 5, DARK_ELIXIR, DEFENSE_FIRST, GROUND, AttackProfile.single(0.8), List.of(
             new TroopStats(270, 60, 0),
             new TroopStats(312, 70, 20),
-            new TroopStats(360, 80, 40),
-            new TroopStats(400, 91, 80),
-            new TroopStats(450, 102, 150),
-            new TroopStats(500, 115, 250)
+            new TroopStats(370, 80, 40),
+            new TroopStats(430, 92, 80),
+            new TroopStats(500, 105, 150),
+            new TroopStats(590, 118, 250),
+            new TroopStats(700, 140, 0),
+            new TroopStats(810, 155, 20),
+            new TroopStats(890, 165, 40),
+            new TroopStats(970, 176, 80),
+            new TroopStats(1080, 187, 150),
+            new TroopStats(1230, 200, 250),
+            new TroopStats(1380, 213, 250),
+            new TroopStats(1500, 225, 250),
+            new TroopStats(1700, 250, 250)
     )),
 
     HEALER("Healer", 14, ELIXIR, WEAKEST_FIRST, AIR, TroopRole.SUPPORT, AttackProfile.single(5.0), List.of(
             new TroopStats(500, 36, 0),
-            new TroopStats(600, 42, 8000),
-            new TroopStats(690, 48, 20000),
-            new TroopStats(790, 54, 45000),
-            new TroopStats(880, 60, 90000)
+            new TroopStats(700, 48, 450000),
+            new TroopStats(900, 60, 900000),
+            new TroopStats(1200, 66, 2500000),
+            new TroopStats(1500, 72, 4000000),
+            new TroopStats(1600, 72, 6000000),
+            new TroopStats(1700, 72, 9500000),
+            new TroopStats(1800, 76, 11000000),
+            new TroopStats(1900, 80, 13000000),
+            new TroopStats(2000, 80, 17000000),
+            new TroopStats(2100, 82, 28500000)
     )),
 
     DRAGON("Dragon", 20, ELIXIR, FIRST_ALIVE, AIR, AttackProfile.splash(3.0, 0.3), List.of(
             new TroopStats(1900, 140, 0),
-            new TroopStats(2100, 160, 120000),
-            new TroopStats(2300, 180, 220000),
-            new TroopStats(2700, 210, 400000),
-            new TroopStats(3100, 240, 700000),
-            new TroopStats(3400, 270, 1200000)
+            new TroopStats(2100, 160, 1000000),
+            new TroopStats(2300, 180, 2000000),
+            new TroopStats(2700, 210, 3000000),
+            new TroopStats(3100, 240, 3800000),
+            new TroopStats(3400, 270, 4900000),
+            new TroopStats(3900, 310, 5000000),
+            new TroopStats(4200, 330, 7500000),
+            new TroopStats(4500, 350, 10500000),
+            new TroopStats(4900, 370, 12000000),
+            new TroopStats(5300, 390, 14000000),
+            new TroopStats(5700, 410, 18500000),
+            new TroopStats(6000, 430, 28500000)
     ));
 
     private final String label;
