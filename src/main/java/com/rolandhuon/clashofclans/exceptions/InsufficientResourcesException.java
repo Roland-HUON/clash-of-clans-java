@@ -1,4 +1,4 @@
-package com.rolandhuon.clashofclans.service;
+package com.rolandhuon.clashofclans.exceptions;
 
 public class InsufficientResourcesException extends RuntimeException {
 

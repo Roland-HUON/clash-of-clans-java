@@ -1,7 +1,7 @@
 package com.rolandhuon.clashofclans.controller;
 
+import com.rolandhuon.clashofclans.exceptions.PlayerNotFoundException;
 import com.rolandhuon.clashofclans.model.Player;
-import com.rolandhuon.clashofclans.service.PlayerNotFoundException;
 import com.rolandhuon.clashofclans.service.PlayerService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

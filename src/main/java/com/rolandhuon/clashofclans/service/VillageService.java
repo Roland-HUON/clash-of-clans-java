@@ -1,5 +1,8 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.exceptions.NotFoundException;
+import com.rolandhuon.clashofclans.exceptions.PlayerNotFoundException;
+import com.rolandhuon.clashofclans.exceptions.InsufficientResourcesException;
 import com.rolandhuon.clashofclans.domain.building.BuildingType;
 import com.rolandhuon.clashofclans.dto.BuildingRequest;
 import com.rolandhuon.clashofclans.dto.VillageRequest;

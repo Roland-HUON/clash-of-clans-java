@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.exceptions.NotFoundException;
 import com.rolandhuon.clashofclans.domain.village.Harvest;
 import com.rolandhuon.clashofclans.model.Village;
 import com.rolandhuon.clashofclans.model.VillageBuilding;

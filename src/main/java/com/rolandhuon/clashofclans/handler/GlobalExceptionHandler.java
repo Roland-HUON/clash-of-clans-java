@@ -1,8 +1,8 @@
 package com.rolandhuon.clashofclans.handler;
 
+import com.rolandhuon.clashofclans.exceptions.NotFoundException;
+import com.rolandhuon.clashofclans.exceptions.InsufficientResourcesException;
 import com.rolandhuon.clashofclans.dto.ErrorResponse;
-import com.rolandhuon.clashofclans.service.InsufficientResourcesException;
-import com.rolandhuon.clashofclans.service.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;

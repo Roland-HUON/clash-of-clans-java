@@ -393,7 +393,8 @@ repository/  Spring Data interfaces
 service/     game rules and orchestration
 controller/  REST endpoints
 dto/         what the API exposes, kept separate from the domain
-handler/     exception to HTTP status translation
+exceptions/  the exceptions the services raise
+handler/     turns those exceptions into HTTP statuses
 web/         servlet filters - rate limiting
 config/      beans and typed configuration properties
 app/         CLI runner, data seeder, event listeners

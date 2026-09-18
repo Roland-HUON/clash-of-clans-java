@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.exceptions.PlayerNotFoundException;
 import com.rolandhuon.clashofclans.dto.PlayerRequest;
 import com.rolandhuon.clashofclans.domain.troop.TroopType;
 import com.rolandhuon.clashofclans.model.Player;

@@ -1,10 +1,10 @@
 package com.rolandhuon.clashofclans.controller;
 
+import com.rolandhuon.clashofclans.exceptions.NotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import com.rolandhuon.clashofclans.service.NotFoundException;
 import com.rolandhuon.clashofclans.domain.troop.TroopType;
 import com.rolandhuon.clashofclans.dto.TroopTypeDto;
 import org.springframework.web.bind.annotation.GetMapping;

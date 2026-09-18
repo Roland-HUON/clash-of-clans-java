@@ -1,5 +1,7 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.exceptions.NotFoundException;
+import com.rolandhuon.clashofclans.exceptions.InsufficientResourcesException;
 import com.rolandhuon.clashofclans.domain.common.EntityType;
 import com.rolandhuon.clashofclans.domain.common.ResourceType;
 import com.rolandhuon.clashofclans.model.Player;

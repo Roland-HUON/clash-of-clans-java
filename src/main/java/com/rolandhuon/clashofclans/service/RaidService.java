@@ -1,5 +1,7 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.exceptions.NotFoundException;
+import com.rolandhuon.clashofclans.exceptions.PlayerNotFoundException;
 import com.rolandhuon.clashofclans.domain.battle.BattleKind;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
 import com.rolandhuon.clashofclans.domain.battle.Loot;

@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.service;
 
+import com.rolandhuon.clashofclans.exceptions.PlayerNotFoundException;
 import com.rolandhuon.clashofclans.model.Player;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
 import org.springframework.stereotype.Service;
