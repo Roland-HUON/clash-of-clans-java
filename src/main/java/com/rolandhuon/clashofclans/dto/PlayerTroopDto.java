@@ -4,7 +4,8 @@ import com.rolandhuon.clashofclans.domain.troop.TroopType;
 import com.rolandhuon.clashofclans.model.PlayerTroop;
 
 public record PlayerTroopDto(Long id, String type, String label, int level, int maxLevel,
-                             int hitPoints, int damage, Integer nextUpgradeCost) {
+                             int hitPoints, int damage, int housingSpace,
+                             String upgradeResource, Integer nextUpgradeCost) {
 
     public static PlayerTroopDto from(PlayerTroop troop) {
         TroopType type = troop.getType();
@@ -20,6 +21,8 @@ public record PlayerTroopDto(Long id, String type, String label, int level, int 
                 type.maxLevel(),
                 type.statsAt(level).hp(),
                 type.statsAt(level).dps(),
+                type.housingSpace(),
+                type.upgradeResource().name(),
                 nextCost);
     }
 }

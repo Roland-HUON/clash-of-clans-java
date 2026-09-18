@@ -1,6 +1,5 @@
 package com.rolandhuon.clashofclans.service;
 
-import com.rolandhuon.clashofclans.config.BattleProperties;
 import com.rolandhuon.clashofclans.domain.battle.BattleResult;
 import com.rolandhuon.clashofclans.domain.battle.Loot;
 import com.rolandhuon.clashofclans.domain.battle.TrophyExchange;
@@ -32,7 +31,6 @@ public class RaidService {
     private final BuildingFactory buildingFactory;
     private final BattleService battleService;
     private final BattleHistoryService battleHistoryService;
-    private final BattleProperties battleProperties;
 
     public RaidService(PlayerRepository playerRepository,
                        VillageRepository villageRepository,
@@ -40,8 +38,7 @@ public class RaidService {
                        TroopFactory troopFactory,
                        BuildingFactory buildingFactory,
                        BattleService battleService,
-                       BattleHistoryService battleHistoryService,
-                       BattleProperties battleProperties) {
+                       BattleHistoryService battleHistoryService) {
         this.playerRepository = playerRepository;
         this.villageRepository = villageRepository;
         this.troopRepository = troopRepository;
@@ -49,7 +46,6 @@ public class RaidService {
         this.buildingFactory = buildingFactory;
         this.battleService = battleService;
         this.battleHistoryService = battleHistoryService;
-        this.battleProperties = battleProperties;
     }
 
     @Transactional
@@ -57,11 +53,18 @@ public class RaidService {
         Player attacker = playerRepository.findById(request.attackerId())
                 .orElseThrow(() -> new PlayerNotFoundException(request.attackerId()));
 
+        Village base = villageRepository.findById(request.attackerVillageId())
+                .orElseThrow(() -> new NotFoundException("Village", request.attackerVillageId()));
+
         Village target = villageRepository.findById(request.targetVillageId())
                 .orElseThrow(() -> new NotFoundException("Village", request.targetVillageId()));
 
         Player defender = target.getPlayer();
 
+        if (!base.getPlayer().getId().equals(attacker.getId())) {
+            throw new IllegalStateException(
+                    "Village " + base.getId() + " does not belong to player " + attacker.getId());
+        }
         if (defender.getId().equals(attacker.getId())) {
             throw new IllegalStateException("A player cannot raid their own village.");
         }
@@ -69,7 +72,7 @@ public class RaidService {
             throw new IllegalStateException("Village " + target.getId() + " has no building to attack.");
         }
 
-        List<Troop> army = buildArmy(attacker, request.army());
+        List<Troop> army = buildArmy(attacker, base, request.army());
         com.rolandhuon.clashofclans.domain.village.Village battlefield = buildBattlefield(target);
 
         BattleResult result = battleService.fight(army, battlefield);
@@ -93,9 +96,21 @@ public class RaidService {
         return new RaidOutcome(result, loot, trophies, attacker.getTrophies(), defender.getTrophies());
     }
 
-    private List<Troop> buildArmy(Player attacker, List<RaidUnitRequest> spec) {
+    private int housingCapacityOf(Village base) {
+        return base.getBuildings().stream()
+                .filter(b -> b.getType().storesTroops())
+                .mapToInt(b -> b.getType().housingCapacityAt(b.getLevel()))
+                .sum();
+    }
+
+    private List<Troop> buildArmy(Player attacker, Village base, List<RaidUnitRequest> spec) {
         if (spec == null || spec.isEmpty()) {
             throw new IllegalArgumentException("An army is required.");
+        }
+
+        int capacity = housingCapacityOf(base);
+        if (capacity == 0) {
+            throw new IllegalStateException("Village " + base.getId() + " has no military camp to host an army.");
         }
 
         List<Troop> army = new ArrayList<>();
@@ -110,9 +125,9 @@ public class RaidService {
         }
 
         int used = army.stream().mapToInt(Troop::getHousingSpace).sum();
-        if (used > battleProperties.maxHousingSpace()) {
+        if (used > capacity) {
             throw new IllegalArgumentException(
-                    "Army too large: " + used + " housing space used, " + battleProperties.maxHousingSpace() + " available.");
+                    "Army too large: " + used + " housing space used, " + capacity + " available.");
         }
 
         return army;

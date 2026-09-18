@@ -4,4 +4,6 @@ public interface EntityType {
     String label();
     int maxLevel();
     int hpAt(int level);
+    ResourceType upgradeResource();
+    int upgradeCostFrom(int currentLevel);
 }

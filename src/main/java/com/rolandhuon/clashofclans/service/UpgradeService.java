@@ -1,7 +1,7 @@
 package com.rolandhuon.clashofclans.service;
 
-import com.rolandhuon.clashofclans.domain.building.BuildingType;
-import com.rolandhuon.clashofclans.domain.troop.TroopType;
+import com.rolandhuon.clashofclans.domain.common.EntityType;
+import com.rolandhuon.clashofclans.domain.common.ResourceType;
 import com.rolandhuon.clashofclans.model.Player;
 import com.rolandhuon.clashofclans.model.PlayerTroop;
 import com.rolandhuon.clashofclans.model.VillageBuilding;
@@ -26,22 +26,9 @@ public class UpgradeService {
         VillageBuilding building = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> new NotFoundException("Building", buildingId));
 
-        BuildingType type = building.getType();
-        int current = building.getLevel();
-
-        if (current >= type.maxLevel()) {
-            throw new IllegalStateException(type.label() + " is already at max level (" + type.maxLevel() + ")");
-        }
-
-        int cost = type.upgradeCostFrom(current);
         Player owner = building.getVillage().getPlayer();
-
-        if (owner.getGold() < cost) {
-            throw new InsufficientResourcesException("gold", owner.getGold(), cost);
-        }
-
-        owner.spendGold(cost);
-        building.setLevel(current + 1);
+        int nextLevel = pay(owner, building.getType(), building.getLevel());
+        building.setLevel(nextLevel);
 
         return buildingRepository.save(building);
     }
@@ -51,23 +38,27 @@ public class UpgradeService {
         PlayerTroop troop = troopRepository.findById(troopId)
                 .orElseThrow(() -> new NotFoundException("Troop", troopId));
 
-        TroopType type = troop.getType();
-        int current = troop.getLevel();
+        Player owner = troop.getPlayer();
+        int nextLevel = pay(owner, troop.getType(), troop.getLevel());
+        troop.setLevel(nextLevel);
 
-        if (current >= type.maxLevel()) {
+        return troopRepository.save(troop);
+    }
+
+    private int pay(Player owner, EntityType type, int currentLevel) {
+        if (currentLevel >= type.maxLevel()) {
             throw new IllegalStateException(type.label() + " is already at max level (" + type.maxLevel() + ")");
         }
 
-        int cost = type.upgradeCostFrom(current);
-        Player owner = troop.getPlayer();
+        ResourceType resource = type.upgradeResource();
+        int cost = type.upgradeCostFrom(currentLevel);
+        int balance = owner.balanceOf(resource);
 
-        if (owner.getElixir() < cost) {
-            throw new InsufficientResourcesException("elixir", owner.getElixir(), cost);
+        if (balance < cost) {
+            throw new InsufficientResourcesException(resource.name().toLowerCase().replace('_', ' '), balance, cost);
         }
 
-        owner.spendElixir(cost);
-        troop.setLevel(current + 1);
-
-        return troopRepository.save(troop);
+        owner.spend(resource, cost);
+        return currentLevel + 1;
     }
 }

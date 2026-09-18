@@ -30,27 +30,35 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        playerRepository.save(newPlayer("Roland", 12, 250_000, 120_000, 2_000, 1_450,
-                "Northern Stronghold", 40_000, 25_000, 800, 5, 4));
+        playerRepository.save(newPlayer("Roland", 12, 250_000, 120_000, 8_000, 1_450,
+                "Northern Stronghold", 40_000, 25_000, 800, 5, 4, 2, 2));
 
-        playerRepository.save(newPlayer("Ada", 9, 80_000, 60_000, 500, 1_120,
-                "Analytical Valley", 18_000, 12_000, 300, 3, 3));
+        playerRepository.save(newPlayer("Ada", 9, 80_000, 60_000, 3_000, 1_120,
+                "Analytical Valley", 18_000, 12_000, 300, 3, 3, 2, 1));
 
-        playerRepository.save(newPlayer("Grace", 7, 30_000, 20_000, 100, 860,
-                "Compiler Hill", 9_000, 6_000, 120, 2, 2));
+        playerRepository.save(newPlayer("Grace", 7, 30_000, 20_000, 1_000, 860,
+                "Compiler Hill", 9_000, 6_000, 120, 2, 2, 1, 1));
 
-        System.out.println("[seed] 3 players created, each with 1 village, 2 buildings and 2 troops.");
+        System.out.println("[seed] 3 players created with villages, camps, a monolith and troops.");
     }
 
     private Player newPlayer(String name, int level, int gold, int elixir, int darkElixir, int trophies,
                              String villageName, int villageGold, int villageElixir, int villageDarkElixir,
-                             int labLevel, int hallLevel) {
+                             int labLevel, int hallLevel, int campCount, int campLevel) {
 
         Player player = new Player(name, level, gold, elixir, darkElixir, trophies);
 
         Village village = new Village(villageName, villageGold, villageElixir, villageDarkElixir);
         village.addBuilding(new VillageBuilding(BuildingType.LABORATORY, labLevel));
         village.addBuilding(new VillageBuilding(BuildingType.HEROHALL, hallLevel));
+        village.addBuilding(new VillageBuilding(BuildingType.MONOLITH, 1));
+        village.addBuilding(new VillageBuilding(BuildingType.SPELL_FACTORY, 1));
+        village.addBuilding(new VillageBuilding(BuildingType.PET_HOUSE, 1));
+
+        for (int i = 0; i < campCount; i++) {
+            village.addBuilding(new VillageBuilding(BuildingType.MILITARY_CAMP, campLevel));
+        }
+
         player.addVillage(village);
 
         player.addTroop(new PlayerTroop(TroopType.BARBARIAN, 1));

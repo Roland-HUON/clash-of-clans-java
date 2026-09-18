@@ -1,5 +1,6 @@
 package com.rolandhuon.clashofclans.model;
 
+import com.rolandhuon.clashofclans.domain.common.ResourceType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,16 +51,27 @@ public class Player {
         troop.setPlayer(this);
     }
 
-    public void spendGold(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("Amount must be >= 0");
-        if (gold < amount) throw new IllegalStateException("Not enough gold: " + gold + " < " + amount);
-        gold -= amount;
+    public int balanceOf(ResourceType resource) {
+        return switch (resource) {
+            case GOLD -> gold;
+            case ELIXIR -> elixir;
+            case DARK_ELIXIR -> darkElixir;
+        };
     }
 
-    public void spendElixir(int amount) {
+    public void spend(ResourceType resource, int amount) {
         if (amount < 0) throw new IllegalArgumentException("Amount must be >= 0");
-        if (elixir < amount) throw new IllegalStateException("Not enough elixir: " + elixir + " < " + amount);
-        elixir -= amount;
+
+        int balance = balanceOf(resource);
+        if (balance < amount) {
+            throw new IllegalStateException("Not enough " + resource + ": " + balance + " < " + amount);
+        }
+
+        switch (resource) {
+            case GOLD -> gold -= amount;
+            case ELIXIR -> elixir -= amount;
+            case DARK_ELIXIR -> darkElixir -= amount;
+        }
     }
 
     public void earn(int gold, int elixir, int darkElixir) {

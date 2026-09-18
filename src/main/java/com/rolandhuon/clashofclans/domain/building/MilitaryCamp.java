@@ -1,15 +1,12 @@
 package com.rolandhuon.clashofclans.domain.building;
 
-import com.rolandhuon.clashofclans.domain.troop.Troop;
+public class MilitaryCamp extends AbstractBuilding {
 
-import java.util.List;
+    public MilitaryCamp(){
+        this(1);
+    }
 
-public class MilitaryCamp {
-    private static int maxMilitaryCampCount = 4; 
-
-    int pv;
-    int level;
-    int housingSpaceAvailable;
-    int militaryCampCount;
-    List<Troop> troops;
+    public MilitaryCamp(int level) {
+        super(BuildingType.MILITARY_CAMP, level);
+    }
 }

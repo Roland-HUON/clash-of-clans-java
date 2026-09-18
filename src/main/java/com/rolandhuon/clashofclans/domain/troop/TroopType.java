@@ -3,15 +3,17 @@ package com.rolandhuon.clashofclans.domain.troop;
 import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
 import com.rolandhuon.clashofclans.domain.common.AttackProfile;
 import com.rolandhuon.clashofclans.domain.common.EntityType;
+import com.rolandhuon.clashofclans.domain.common.ResourceType;
 
 import java.util.List;
 
 import static com.rolandhuon.clashofclans.domain.battle.TargetingMode.FIRST_ALIVE;
 import static com.rolandhuon.clashofclans.domain.battle.TargetingMode.WEAKEST_FIRST;
+import static com.rolandhuon.clashofclans.domain.common.ResourceType.ELIXIR;
 
 public enum TroopType implements EntityType {
 
-    BARBARIAN("Barbarian", 1, FIRST_ALIVE, AttackProfile.single(0.4), List.of(
+    BARBARIAN("Barbarian", 1, ELIXIR, FIRST_ALIVE, AttackProfile.single(0.4), List.of(
             new TroopStats(45, 8, 0),
             new TroopStats(54, 11, 200),
             new TroopStats(65, 14, 400),
@@ -27,7 +29,7 @@ public enum TroopType implements EntityType {
             new TroopStats(310, 51, 50000)
     )),
 
-    ARCHER("Archer", 1, WEAKEST_FIRST, AttackProfile.single(3.5), List.of(
+    ARCHER("Archer", 1, ELIXIR, WEAKEST_FIRST, AttackProfile.single(3.5), List.of(
             new TroopStats(20, 7, 0),
             new TroopStats(23, 9, 200),
             new TroopStats(28, 12, 400),
@@ -46,14 +48,16 @@ public enum TroopType implements EntityType {
 
     private final String label;
     private final int housingSpace;
+    private final ResourceType upgradeResource;
     private final TargetingMode targetingMode;
     private final AttackProfile attackProfile;
     private final List<TroopStats> statsByLevel;
 
-    TroopType(String label, int housingSpace, TargetingMode mode, AttackProfile kind, List<TroopStats> statsByLevel){
+    TroopType(String label, int housingSpace, ResourceType upgradeResource, TargetingMode mode, AttackProfile kind, List<TroopStats> statsByLevel){
         if(statsByLevel.isEmpty()) throw new IllegalArgumentException("Add levels pls.");
         this.label = label;
         this.housingSpace = housingSpace;
+        this.upgradeResource = upgradeResource;
         this.targetingMode = mode;
         this.attackProfile = kind;
         this.statsByLevel = List.copyOf(statsByLevel);
@@ -74,14 +78,20 @@ public enum TroopType implements EntityType {
         return statsByLevel.get(level - 1);
     }
 
+    @Override
     public int upgradeCostFrom(int currentLevel){
         if(currentLevel >= maxLevel()) throw new IllegalStateException(label + " is already at max level (" + maxLevel() + ")");
-        return statsAt(currentLevel + 1).elixirCost();
+        return statsAt(currentLevel + 1).upgradeCost();
     }
 
     @Override
     public String label(){
         return label;
+    }
+
+    @Override
+    public ResourceType upgradeResource(){
+        return upgradeResource;
     }
 
     public int housingSpace(){
