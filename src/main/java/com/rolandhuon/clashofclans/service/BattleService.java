@@ -75,7 +75,6 @@ public class BattleService {
     private void returnFire(Village village, List<Troop> army) {
         for (Attacker defender : village.aliveDefenders()) {
             TargetingStrategy defenderStrategy = strategies.get(defender.targetingMode());
-            if (defenderStrategy == null) continue;
 
             List<Damageable> reachableTroops = army.stream()
                     .filter(Troop::isAlive)

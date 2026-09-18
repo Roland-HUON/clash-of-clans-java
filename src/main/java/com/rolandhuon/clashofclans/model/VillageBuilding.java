@@ -33,10 +33,6 @@ public class VillageBuilding {
 
     protected VillageBuilding(){}
 
-    public VillageBuilding(BuildingType type, int level) {
-        this(type, level, Instant.now());
-    }
-
     public VillageBuilding(BuildingType type, int level, Instant builtAt) {
         if (level < 1 || level > type.maxLevel()) {
             throw new IllegalArgumentException(type.label() + ": level " + level + " out of bounds [1.." + type.maxLevel() + "]");
@@ -49,10 +45,10 @@ public class VillageBuilding {
     public int pendingProduction(Instant now) {
         if (!type.produces() || lastCollectedAt == null) return 0;
 
-        long minutes = Duration.between(lastCollectedAt, now).toMinutes();
-        if (minutes <= 0) return 0;
+        long seconds = Duration.between(lastCollectedAt, now).toSeconds();
+        if (seconds <= 0) return 0;
 
-        long produced = (long) type.productionPerHourAt(level) * minutes / 60;
+        long produced = (long) type.productionPerHourAt(level) * seconds / 3600;
         return (int) Math.min(produced, type.mineCapacityAt(level));
     }
 
@@ -63,8 +59,8 @@ public class VillageBuilding {
         if (amount >= type.mineCapacityAt(level)) {
             lastCollectedAt = now;
         } else {
-            long minutesPaidFor = Duration.between(lastCollectedAt, now).toMinutes();
-            lastCollectedAt = lastCollectedAt.plus(Duration.ofMinutes(minutesPaidFor));
+            long secondsPaidFor = (long) amount * 3600 / type.productionPerHourAt(level);
+            lastCollectedAt = lastCollectedAt.plusSeconds(secondsPaidFor);
         }
         return amount;
     }

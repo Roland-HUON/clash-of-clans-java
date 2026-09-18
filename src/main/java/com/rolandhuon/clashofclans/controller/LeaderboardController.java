@@ -52,6 +52,7 @@ public class LeaderboardController {
     })
     @GetMapping("/api/players/{id}/rank")
     public LeaderboardEntryDto rank(@PathVariable Long id) {
-        return LeaderboardEntryDto.of(leaderboardService.rankOf(id), leaderboardService.find(id));
+        Player player = leaderboardService.find(id);
+        return LeaderboardEntryDto.of(leaderboardService.rankOf(player), player);
     }
 }

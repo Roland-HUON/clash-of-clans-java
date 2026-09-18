@@ -8,6 +8,8 @@ import com.rolandhuon.clashofclans.domain.troop.Troop;
 import com.rolandhuon.clashofclans.domain.troop.TroopType;
 import com.rolandhuon.clashofclans.domain.village.Village;
 import com.rolandhuon.clashofclans.service.BattleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import java.util.List;
 @Profile("demo")
 @Component
 public class GameCliRunner implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(GameCliRunner.class);
 
     private final BattleService battleService;
 
@@ -46,18 +50,18 @@ public class GameCliRunner implements CommandLineRunner {
         village2.addBuilding(laboratory2);
         village2.addBuilding(herohall2);
 
-        System.out.println("=== RAID ===");
-        System.out.println("Army             : " + army1.size() + " troops");
-        System.out.println("Village          : " + village2.aliveTargets().size() + " buildings");
-        System.out.println();
+        log.info("{}", "=== RAID ===");
+        log.info("{}", "Army             : " + army1.size() + " troops");
+        log.info("{}", "Village          : " + village2.aliveTargets().size() + " buildings");
+        log.info("");
 
         BattleResult result = battleService.fight(army1, village2);
 
-        System.out.println();
-        System.out.println("=== RESULT ===");
-        System.out.println("Destruction      : " + result.destructionPercentage() + "%");
-        System.out.println("Stars            : " + result.stars());
-        System.out.println("Turns            : " + result.turns());
-        System.out.println("Surviving troops : " + result.survivingTroops() + " / " + army1.size());
+        log.info("");
+        log.info("{}", "=== RESULT ===");
+        log.info("{}", "Destruction      : " + result.destructionPercentage() + "%");
+        log.info("{}", "Stars            : " + result.stars());
+        log.info("{}", "Turns            : " + result.turns());
+        log.info("{}", "Surviving troops : " + result.survivingTroops() + " / " + army1.size());
     }
 }

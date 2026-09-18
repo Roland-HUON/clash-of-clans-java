@@ -45,7 +45,7 @@ class LootTest {
     @Test
     @DisplayName("An empty loot knows it is empty.")
     void anEmptyLootKnowsIt() {
-        assertThat(Loot.none().isEmpty()).isTrue();
+        assertThat(new Loot(0, 0, 0).isEmpty()).isTrue();
         assertThat(Loot.proportionalTo(0, 1000, 1000, 1000).isEmpty()).isTrue();
         assertThat(Loot.proportionalTo(100, 1, 0, 0).isEmpty()).isFalse();
     }

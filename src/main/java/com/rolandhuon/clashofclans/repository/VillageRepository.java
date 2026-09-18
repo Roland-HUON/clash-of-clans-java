@@ -10,8 +10,6 @@ import java.util.Optional;
 
 public interface VillageRepository extends JpaRepository<Village, Long> {
 
-    List<Village> findByPlayerId(Long playerId);
-
     @Query("select distinct v from Village v join fetch v.player left join fetch v.buildings order by v.id")
     List<Village> findAllWithBuildings();
 

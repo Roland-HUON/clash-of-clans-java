@@ -14,6 +14,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,9 +82,11 @@ public class DataSeeder implements CommandLineRunner {
     );
 
     private final PlayerRepository playerRepository;
+    private final Clock clock;
 
-    public DataSeeder(PlayerRepository playerRepository) {
+    public DataSeeder(PlayerRepository playerRepository, Clock clock) {
         this.playerRepository = playerRepository;
+        this.clock = clock;
     }
 
     @Override
@@ -173,8 +177,9 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void add(Village village, BuildingType type, int level, int count) {
+        Instant now = clock.instant();
         for (int i = 0; i < Math.min(count, type.maxCount()); i++) {
-            village.addBuilding(new VillageBuilding(type, level));
+            village.addBuilding(new VillageBuilding(type, level, now));
         }
     }
 

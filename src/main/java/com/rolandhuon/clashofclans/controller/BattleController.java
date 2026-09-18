@@ -67,7 +67,7 @@ public class BattleController {
     }
 
         @Operation(summary = "List past battles",
-            description = "Returns every battle recorded so far, simulations and raids alike. No order is guaranteed and the two kinds are not distinguished.")
+            description = "Returns every battle recorded so far, oldest first, each one tagged SIMULATION or RAID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The request succeeded."),
             @ApiResponse(responseCode = "429", description = "Rate limit exceeded: more than 60 requests in a minute from this client.")

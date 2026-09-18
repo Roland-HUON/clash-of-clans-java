@@ -3,6 +3,7 @@ package com.rolandhuon.clashofclans.service;
 import com.rolandhuon.clashofclans.model.Player;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class LeaderboardService {
         this.playerRepository = playerRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<Player> ranking(Integer limit) {
         int size = (limit == null) ? DEFAULT_LIMIT : limit;
         if (size < 1 || size > MAX_LIMIT) {
@@ -28,17 +30,17 @@ public class LeaderboardService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public int rankOf(Long playerId) {
-        List<Player> ranking = playerRepository.findAllByOrderByTrophiesDescNameAsc();
-
-        for (int i = 0; i < ranking.size(); i++) {
-            if (ranking.get(i).getId().equals(playerId)) {
-                return i + 1;
-            }
-        }
-        throw new PlayerNotFoundException(playerId);
+        return rankOf(find(playerId));
     }
 
+    @Transactional(readOnly = true)
+    public int rankOf(Player player) {
+        return (int) playerRepository.countAhead(player.getTrophies(), player.getName()) + 1;
+    }
+
+    @Transactional(readOnly = true)
     public Player find(Long playerId) {
         return playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId));

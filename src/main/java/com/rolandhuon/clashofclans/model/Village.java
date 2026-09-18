@@ -43,11 +43,14 @@ public class Village {
         this.darkElixir = darkElixir;
     }
 
+    public boolean hasRoomFor(BuildingType type) {
+        return buildings.stream().filter(b -> b.getType() == type).count() < type.maxCount();
+    }
+
     public void addBuilding(VillageBuilding building) {
         BuildingType type = building.getType();
-        long already = buildings.stream().filter(b -> b.getType() == type).count();
 
-        if (already >= type.maxCount()) {
+        if (!hasRoomFor(type)) {
             throw new IllegalStateException("Too many " + type.label() + " (max " + type.maxCount() + ")");
         }
 

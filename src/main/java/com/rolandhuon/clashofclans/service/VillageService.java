@@ -48,7 +48,7 @@ public class VillageService {
 
     @Transactional(readOnly = true)
     public Village findById(Long id) {
-        Village village = villageRepository.findById(id)
+        Village village = villageRepository.findByIdWithBuildings(id)
                 .orElseThrow(() -> new NotFoundException("Village", id));
         return hydrate(village);
     }
@@ -70,9 +70,12 @@ public class VillageService {
                 .orElseThrow(() -> new NotFoundException("Village", villageId));
 
         BuildingType type = BuildingType.from(request.type());
-        payForBuilding(village.getPlayer(), type, request.level());
+        if (!village.hasRoomFor(type)) {
+            throw new IllegalStateException("Too many " + type.label() + " (max " + type.maxCount() + ")");
+        }
 
         VillageBuilding building = new VillageBuilding(type, request.level(), clock.instant());
+        payForBuilding(village.getPlayer(), type, request.level());
         village.addBuilding(building);
 
         return buildingRepository.save(building);

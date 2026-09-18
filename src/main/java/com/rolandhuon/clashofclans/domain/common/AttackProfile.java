@@ -3,7 +3,7 @@ package com.rolandhuon.clashofclans.domain.common;
 public record AttackProfile(double range, AttackType type, double splashRadius) {
     public AttackProfile{
         if(range < 0) throw new IllegalArgumentException("Range >= 0 ");
-        if(type == AttackType.SPLASH && splashRadius <= 0) throw new IllegalArgumentException("Splash radius for splash attacker >= 0");
+        if(type == AttackType.SPLASH && splashRadius <= 0) throw new IllegalArgumentException("A splash attacker needs a radius above zero");
         if(type == AttackType.SINGLE && splashRadius != 0) throw new IllegalArgumentException("Splash radius for single has to be 0");
     }
 

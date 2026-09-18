@@ -11,27 +11,31 @@
     },
     {
       "key": "playerId",
-      "value": "2"
+      "value": "1"
     },
     {
       "key": "villageId",
+      "value": "1"
+    },
+    {
+      "key": "sandboxPlayerId",
+      "value": ""
+    },
+    {
+      "key": "sandboxVillageId",
+      "value": ""
+    },
+    {
+      "key": "sandboxBuildingId",
+      "value": ""
+    },
+    {
+      "key": "sandboxTroopId",
+      "value": ""
+    },
+    {
+      "key": "targetVillageId",
       "value": "2"
-    },
-    {
-      "key": "buildingId",
-      "value": "1"
-    },
-    {
-      "key": "troopId",
-      "value": "1"
-    },
-    {
-      "key": "throwawayPlayerId",
-      "value": ""
-    },
-    {
-      "key": "throwawayVillageId",
-      "value": ""
     }
   ],
   "item": [
@@ -207,10 +211,10 @@
                 "players"
               ]
             },
-            "description": "201 Created. Trophies start at 0.",
+            "description": "Every mutating request below works on this chief, never on a seeded one.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Newbie\",\n  \"level\": 1,\n  \"gold\": 5000,\n  \"elixir\": 5000,\n  \"darkElixir\": 0\n}",
+              "raw": "{\n  \"name\": \"Postman Sandbox\",\n  \"level\": 5,\n  \"gold\": 5000000,\n  \"elixir\": 5000000,\n  \"darkElixir\": 50000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -225,9 +229,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const body = pm.response.json();",
-                  "pm.collectionVariables.set('throwawayPlayerId', body.id);",
-                  "pm.test('created', () => pm.response.to.have.status(201));"
+                  "pm.collectionVariables.set('sandboxPlayerId', pm.response.json().id);"
                 ]
               }
             }
@@ -244,46 +246,26 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/players/{{playerId}}",
+              "raw": "{{baseUrl}}/api/players/{{sandboxPlayerId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "players",
-                "{{playerId}}"
+                "{{sandboxPlayerId}}"
               ]
             },
             "description": "Full replacement. Trophies are left untouched.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Dutofa\",\n  \"level\": 10,\n  \"gold\": 300000,\n  \"elixir\": 200000,\n  \"darkElixir\": 9000\n}",
+              "raw": "{\n  \"name\": \"Postman Sandbox\",\n  \"level\": 6,\n  \"gold\": 5000000,\n  \"elixir\": 5000000,\n  \"darkElixir\": 50000\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete a player",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/players/{{throwawayPlayerId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "players",
-                "{{throwawayPlayerId}}"
-              ]
-            },
-            "description": "Deletes the chief created by \"Create a player\", not a seeded one, so the collection can be run from top to bottom without destroying the data every other request depends on."
           },
           "response": []
         }
@@ -355,21 +337,21 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/players/{{playerId}}/villages",
+              "raw": "{{baseUrl}}/api/players/{{sandboxPlayerId}}/villages",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "players",
-                "{{playerId}}",
+                "{{sandboxPlayerId}}",
                 "villages"
               ]
             },
             "description": "Village resources are the ones that can be looted.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New Camp\",\n  \"gold\": 10000,\n  \"elixir\": 8000,\n  \"darkElixir\": 200\n}",
+              "raw": "{\n  \"name\": \"Sandbox Camp\",\n  \"gold\": 20000,\n  \"elixir\": 15000,\n  \"darkElixir\": 500\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -384,8 +366,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const body = pm.response.json();",
-                  "pm.collectionVariables.set('throwawayVillageId', body.id);"
+                  "pm.collectionVariables.set('sandboxVillageId', pm.response.json().id);"
                 ]
               }
             }
@@ -427,7 +408,7 @@
           ]
         },
         {
-          "name": "Add a building",
+          "name": "Add a gold mine",
           "request": {
             "method": "POST",
             "header": [
@@ -437,18 +418,18 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/villages/{{villageId}}/buildings",
+              "raw": "{{baseUrl}}/api/villages/{{sandboxVillageId}}/buildings",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "villages",
-                "{{villageId}}",
+                "{{sandboxVillageId}}",
                 "buildings"
               ]
             },
-            "description": "The owner is charged the whole ladder up to the level asked for. A type already at its maximum count answers 400.",
+            "description": "The owner is charged the whole ladder up to the level asked for.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"GOLD_MINE\",\n  \"level\": 1\n}",
@@ -459,6 +440,52 @@
               }
             }
           },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('sandboxBuildingId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add a military camp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{sandboxVillageId}}/buildings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{sandboxVillageId}}",
+                "buildings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"MILITARY_CAMP\",\n  \"level\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "The sandbox needs housing space before it can send an army."
+          },
           "response": []
         },
         {
@@ -467,37 +494,17 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/villages/{{villageId}}/collect",
+              "raw": "{{baseUrl}}/api/villages/{{sandboxVillageId}}/collect",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "villages",
-                "{{villageId}}",
+                "{{sandboxVillageId}}",
                 "collect"
               ]
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete a village",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/villages/{{throwawayVillageId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "villages",
-                "{{throwawayVillageId}}"
-              ]
-            },
-            "description": "Deletes the village created above, never a seeded one."
           },
           "response": []
         }
@@ -513,14 +520,14 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/players/{{playerId}}/troops",
+              "raw": "{{baseUrl}}/api/players/{{sandboxPlayerId}}/troops",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "players",
-                "{{playerId}}",
+                "{{sandboxPlayerId}}",
                 "troops"
               ]
             },
@@ -533,11 +540,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const troops = pm.response.json();",
-                  "const affordable = troops",
+                  "const cheapest = pm.response.json()",
                   "    .filter((t) => t.level < t.maxLevel)",
                   "    .sort((a, b) => a.nextUpgradeCost - b.nextUpgradeCost)[0];",
-                  "if (affordable) pm.collectionVariables.set('troopId', affordable.id);"
+                  "if (cheapest) pm.collectionVariables.set('sandboxTroopId', cheapest.id);"
                 ]
               }
             }
@@ -549,14 +555,14 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/buildings/{{buildingId}}/upgrade",
+              "raw": "{{baseUrl}}/api/buildings/{{sandboxBuildingId}}/upgrade",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "buildings",
-                "{{buildingId}}",
+                "{{sandboxBuildingId}}",
                 "upgrade"
               ]
             },
@@ -570,14 +576,14 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/troops/{{troopId}}/upgrade",
+              "raw": "{{baseUrl}}/api/troops/{{sandboxTroopId}}/upgrade",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "troops",
-                "{{troopId}}",
+                "{{sandboxTroopId}}",
                 "upgrade"
               ]
             },
@@ -611,10 +617,10 @@
                 "raids"
               ]
             },
-            "description": "Troop levels come from the attacker research.\nArmy size is capped by the housing capacity of the attacking village military camps.\nLoot is proportional to the destruction percentage.\nTrophies move according to the star count.",
+            "description": "The sandbox chief attacks a seeded village. This is the one request that changes seeded data - it moves loot and trophies, exactly as playing the game would.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"attackerId\": 1,\n  \"attackerVillageId\": 1,\n  \"targetVillageId\": 2,\n  \"army\": [\n    {\n      \"type\": \"BARBARIAN\",\n      \"count\": 20\n    },\n    {\n      \"type\": \"ARCHER\",\n      \"count\": 15\n    }\n  ]\n}",
+              "raw": "{\n  \"attackerId\": {{sandboxPlayerId}},\n  \"attackerVillageId\": {{sandboxVillageId}},\n  \"targetVillageId\": {{targetVillageId}},\n  \"army\": [\n    {\n      \"type\": \"BARBARIAN\",\n      \"count\": 15\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -731,6 +737,51 @@
               ]
             },
             "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Cleanup",
+      "item": [
+        {
+          "name": "Delete the sandbox village",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{sandboxVillageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{sandboxVillageId}}"
+              ]
+            },
+            "description": "Removes the village this collection created."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the sandbox chief",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{sandboxPlayerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{sandboxPlayerId}}"
+              ]
+            },
+            "description": "Removes the chief this collection created, with the troops that came with them."
           },
           "response": []
         }

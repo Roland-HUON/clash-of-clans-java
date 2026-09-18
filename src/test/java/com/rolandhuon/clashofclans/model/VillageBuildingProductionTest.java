@@ -105,20 +105,23 @@ class VillageBuildingProductionTest {
         }
 
         @Test
-        @DisplayName("Collecting too often never costs you the minutes you had banked.")
+        @DisplayName("Collecting constantly earns exactly as much as collecting once.")
         void collectingTooOftenLosesNothing() {
-            VillageBuilding mine = mine(1);
             int rate = BuildingType.GOLD_MINE.productionPerHourAt(1);
 
-            for (int i = 1; i <= 59; i++) {
-                assertThat(mine.collect(after(Duration.ofSeconds(i))))
-                        .as("nothing is due after %d seconds", i)
-                        .isZero();
+            VillageBuilding impatient = mine(1);
+            int piecemeal = 0;
+            for (int second = 1; second <= 3600; second++) {
+                piecemeal += impatient.collect(after(Duration.ofSeconds(second)));
             }
 
-            assertThat(mine.pendingProduction(after(Duration.ofHours(1))))
-                    .as("an hour is still worth an hour, however often it was asked for")
-                    .isEqualTo(rate);
+            VillageBuilding patient = mine(1);
+            int inOneGo = patient.collect(after(Duration.ofHours(1)));
+
+            assertThat(inOneGo).isEqualTo(rate);
+            assertThat(piecemeal)
+                    .as("3600 collections over an hour pay the same hour")
+                    .isEqualTo(inOneGo);
         }
 
         @Test

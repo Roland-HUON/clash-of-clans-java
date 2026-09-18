@@ -18,10 +18,6 @@ public class CombatService {
         this.events = events;
     }
 
-    public void resolveAttack(Attacker attacker, Damageable target){
-        resolveAttack(attacker, target, List.of());
-    }
-
     public void resolveAttack(Attacker attacker, Damageable target, List<Damageable> battlefield){
         Objects.requireNonNull(target, "Need target");
         if(!target.isAlive()) return;

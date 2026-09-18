@@ -9,5 +9,5 @@ import java.util.List;
 public record RaidRequest(@NotNull Long attackerId,
                           @NotNull Long attackerVillageId,
                           @NotNull Long targetVillageId,
-                          @NotEmpty @Valid List<RaidUnitRequest> army) {
+                          @NotEmpty List<@Valid RaidUnitRequest> army) {
 }

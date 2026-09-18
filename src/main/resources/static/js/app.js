@@ -395,8 +395,15 @@ async function refreshEverything() {
 }
 
 function renderBuildOptions(village, editable) {
+  const source = editable ? village : state.homeVillage;
+  if (!source) {
+    el.buildType.innerHTML = '';
+    el.buildBtn.disabled = true;
+    return;
+  }
+
   const counts = new Map();
-  for (const building of village.buildings) {
+  for (const building of source.buildings) {
     counts.set(building.type, (counts.get(building.type) || 0) + 1);
   }
 
@@ -437,7 +444,7 @@ async function build() {
   try {
     const created = await api.addBuilding(state.homeVillage.id, { type: el.buildType.value, level: 1 });
     toast(`${created.label} built`);
-    await showVillage(state.homeVillage.id, { home: true });
+    await refreshAfterSpending({ village: true });
   } catch (error) {
     el.buildHint.className = 'hint err';
     el.buildHint.textContent = describe(error);
@@ -466,9 +473,11 @@ function renderTroops(editable = !state.scouting) {
 }
 
 function renderTargets() {
+  const chosen = el.targetSelect.value;
   const options = state.targets.filter((v) => v.playerId !== state.player.id);
   el.targetSelect.innerHTML = options
     .map((v) => `<option value="${v.id}">${escapeHtml(v.owner ? v.owner.name : '?')} — ${escapeHtml(v.name)}</option>`).join('');
+  if (chosen && options.some((v) => String(v.id) === chosen)) el.targetSelect.value = chosen;
   if (!options.length) el.raidHint.textContent = 'No other village to raid.';
   renderTargetLoot();
 }

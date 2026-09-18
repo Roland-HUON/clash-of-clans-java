@@ -18,10 +18,6 @@ public record Loot(long gold, long elixir, long darkElixir) {
                 share(darkElixir, destructionPercentage));
     }
 
-    public static Loot none() {
-        return new Loot(0, 0, 0);
-    }
-
     public boolean isEmpty() {
         return gold == 0 && elixir == 0 && darkElixir == 0;
     }

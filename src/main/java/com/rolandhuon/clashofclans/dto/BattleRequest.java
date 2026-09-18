@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotEmpty;
 
 import java.util.List;
 
-public record BattleRequest(@NotEmpty @Valid List<UnitRequest> army,
-                            @NotEmpty @Valid List<BuildingRequest> village) {
+public record BattleRequest(@NotEmpty List<@Valid UnitRequest> army,
+                            @NotEmpty List<@Valid BuildingRequest> village) {
 }

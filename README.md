@@ -60,11 +60,16 @@ returns every battle recorded so far, oldest first, each tagged `SIMULATION` or
 `GET /api/players?name=Roland` filters players on an exact name. `GET /api/leaderboard`
 returns the top **10** unless you pass `?limit=`, which must be between 1 and 100.
 
-Import `postman/clash-of-clans.postman_collection.json` into Postman: 25 requests
-covering all 24 endpoints, grouped by topic. It is meant to be **run top to bottom** —
-each request captures what the next one needs (the id of the village it just listed,
-the cheapest building it can afford to upgrade), and the two delete requests only ever
-remove the player and the village the collection created itself, never a seeded one.
+Import `postman/clash-of-clans.postman_collection.json` into Postman: 26 requests
+covering all 24 endpoints, grouped by topic, meant to be **run top to bottom and as
+often as you like**. It builds its own sandbox — a throwaway chief, their village, a
+gold mine and a camp — does every mutation there, and deletes it again in the final
+`8. Cleanup` folder. Running it five times in a row leaves the fifty seeded players
+and villages exactly as they were.
+
+The one request that touches seeded data is the raid: the sandbox chief attacks a
+seeded village, which moves loot and trophies, exactly as playing the game would. The
+trophy exchange is zero-sum, so even the table total comes back unchanged.
 
 A chief created through `POST /api/players` starts with every troop type unlocked at
 level one, so a new account can raid immediately and grow from the laboratory.
@@ -187,10 +192,12 @@ application is down, and a test can hand the calculation any instant it likes in
 of waiting.
 
 A producer stops once it holds **six hours** of its own output, so a village left
-alone for a month is worth no more than one left alone for an evening. Collecting
-advances that producer's clock only by the whole minutes it was paid for, so calling
-`/collect` every few seconds neither pays twice nor throws away the minutes you had
-banked — a test walks both cases.
+alone for a month is worth no more than one left alone for an evening.
+
+Collecting advances that producer's clock by exactly the time the payout was worth,
+down to the second: `secondsPaidFor = amount * 3600 / ratePerHour`. Nothing is paid
+twice and nothing is thrown away — a test collects once a second for a full hour and
+asserts the total equals a single collection of that same hour.
 
 The three storages are not decoration: **once a village owns at least one storage for a
 currency**, it can hold no more of that currency than those storages allow, and a
@@ -361,7 +368,9 @@ balances and asserts the sum is always zero.
 
 Every endpoint carries a summary, a paragraph of description and the meaning of each
 status code it can return, written with `@Tag`, `@Operation` and `@ApiResponses` on
-the controllers. The eight groups are Players, Villages, Upgrades, Raids, Battles,
+the controllers. `springdoc.override-with-generic-response: false` keeps springdoc from
+bolting the `@RestControllerAdvice` handlers onto every operation, which otherwise made
+`GET /api/troop-types` advertise a `409` it can never return. The eight groups are Players, Villages, Upgrades, Raids, Battles,
 Leaderboard, Troop types and Building types.
 
 ## Performance notes
