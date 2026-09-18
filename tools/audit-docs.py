@@ -167,5 +167,59 @@ check('a producer is emptied before its level is raised',
 raid = io.open(SRC + '/service/RaidService.java', encoding='utf-8').read()
 check('a raid checks housing space before it creates any troop',
       raid.index('Army too large') < raid.index('troopFactory.create'))
+print('')
+print('== the stat tables the README quotes ==')
+building_src = io.open(SRC + '/domain/building/BuildingType.java', encoding='utf-8').read()
+troop_src = io.open(SRC + '/domain/troop/TroopType.java', encoding='utf-8').read()
+
+
+def table(source, name, wrapper):
+    block = source[source.index('\n    ' + name + '('):][:8000]
+    body = re.search(wrapper + r'\(\s*List\.of\(([^)]*)\)', block, re.S).group(1)
+    return [int(v) for v in body.replace('\n', '').split(',') if v.strip()]
+
+
+mine = table(building_src, 'GOLD_MINE', 'Production')
+collector = table(building_src, 'ELIXIR_COLLECTOR', 'Production')
+drill = table(building_src, 'DARK_ELIXIR_DRILL', 'Production')
+spoken = [int(n.replace(' ', '').replace(' ', ''))
+          for n in re.findall(r'(\d[\d  ]*) an hour at level', readme)]
+check('the README quotes the mine and the drill starting rates',
+      spoken == [mine[0], drill[0]], str(spoken))
+check('a mine and a collector share one rate table', mine == collector)
+top = re.search(r'and ([\d  ]+) at level seventeen', readme)
+check('the README quotes the mine top rate', top and int(top.group(1).replace(' ', '')) == mine[-1],
+      f'README says {top.group(1) if top else None}, the table ends at {mine[-1]}')
+top_drill = re.search(r'and ([\d  ]+) at level eleven', readme)
+check('the README quotes the drill top rate',
+      top_drill and int(top_drill.group(1).replace(' ', '')) == drill[-1],
+      f'README says {top_drill.group(1) if top_drill else None}, the table ends at {drill[-1]}')
+check('the mine has seventeen levels and the drill eleven, as the README says',
+      len(mine) == 17 and len(drill) == 11, f'{len(mine)} and {len(drill)}')
+
+minted = re.search(r'to 6 sitting on a full buffer was worth ([\d  ]+) gold', readme)
+check('the 5-to-6 upgrade windfall the README quotes is what the table gives',
+      minted and int(minted.group(1).replace(' ', '')) == (mine[5] - mine[4]) * 6,
+      f'README says {minted.group(1) if minted else None}, the table gives {(mine[5] - mine[4]) * 6}')
+minted_top = re.search(r'16 to 17\s*\nis worth ([\d  ]+)', readme)
+check('so is the 16-to-17 one',
+      minted_top and int(minted_top.group(1).replace(' ', '')) == (mine[16] - mine[15]) * 6,
+      f'README says {minted_top.group(1) if minted_top else None}, the table gives {(mine[16] - mine[15]) * 6}')
+
+quoted_rate = re.search(r'at ([\d  ]+) an hour, one unit is worth ([\d.]+) s', readme)
+rate = int(quoted_rate.group(1).replace(' ', ''))
+check('the rate the nanosecond example uses is a real rate', rate in mine, str(rate))
+check('and its per-unit cost is arithmetically right',
+      abs(3600 / rate - float(quoted_rate.group(2))) < 0.001)
+
+rows = re.findall(r'^\| (\w[\w ]*?) \| (\d+) \| (?:\*\*)?(\w+)(?:\*\*)? \| `(\w+)` \| (\w+) \|$', readme, re.M)
+declared = {}
+for m in re.finditer(r'^    [A-Z_]+\("([^"]+)", (\d+), \w+, (\w+), (\w+),(.*?)$', troop_src, re.M):
+    declared[m.group(1)] = (int(m.group(2)), m.group(4).lower(), m.group(3),
+                            'support' if 'SUPPORT' in m.group(5) else 'attacker')
+check(f'the README troop table has a row per troop ({len(declared)})', len(rows) == len(declared),
+      f'{len(rows)} rows for {len(declared)} troops')
+wrong = [r[0] for r in rows if declared.get(r[0]) != (int(r[1]), r[2], r[3], r[4])]
+check('every troop row matches the enum', not wrong, str(wrong))
 print(f'\n{ok} claims verified, {bad} wrong')
 raise SystemExit(1 if bad else 0)

@@ -234,9 +234,9 @@ panel shows what a target still has before you commit an army.
 
 Each currency has one producer and one storage: a Gold Mine, an Elixir Collector and
 a Dark Elixir Drill, each filling up on its own at a rate that grows with its level.
-A mine or a collector makes 200 an hour at level one and 1 800 at level six; the drill
-is far slower, 20 an hour at level one and 100 at level six, as befits the rarest
-currency. A test asserts that every `ResourceType` has exactly one producer, so adding
+A mine or a collector makes 200 an hour at level one and 7 560 at level seventeen; the
+drill is far slower, 20 an hour at level one and 200 at level eleven, as befits the
+rarest currency. A test asserts that every `ResourceType` has exactly one producer, so adding
 a currency without its mine breaks the build. Nothing runs in the
 background: a building remembers when it was last emptied, and what it owes is worked
 out from the time elapsed when you ask. That way the mines keep filling while the
@@ -272,7 +272,8 @@ an upgrade you had already saved for.
 and `pendingProduction` prices the whole elapsed period at the building's *current*
 rate — so raising the level without emptying the mine would re-price hours already
 earned at the new, higher rate and mint the difference out of nothing. A Gold Mine 5
-to 6 sitting on a full buffer was worth 3 000 gold that way. `UpgradeService` banks the
+to 6 sitting on a full buffer was worth 1 800 gold that way, and the jump from 16 to 17
+is worth 3 360. `UpgradeService` banks the
 buffer at the old rate before it touches the level, which costs the player nothing:
 the production is theirs either way, it just gets paid at the rate it was produced at.
 

@@ -118,7 +118,7 @@ public enum BuildingType implements EntityType {
             new BuildingStats(1700, 3000000),
             new BuildingStats(1800, 4000000)
     ),
-            new Firepower(List.of(11, 15, 19, 25, 35, 42, 48, 56, 63, 70, 74, 78, 82, 85, 90, 100, 110, 120, 135, 145), TargetScope.ALL)),
+            new Firepower(List.of(11, 15, 19, 25, 30, 35, 42, 48, 56, 63, 70, 74, 78, 82, 85, 90, 100, 110, 120, 135, 145), TargetScope.ALL)),
 
     MORTAR("Mortar", 4, GOLD, List.of(
             new BuildingStats(400, 5000),
