@@ -115,7 +115,7 @@ public class RaidService {
 
         List<Troop> army = new ArrayList<>();
         for (RaidUnitRequest unit : spec) {
-            TroopType type = TroopType.valueOf(unit.type().toUpperCase());
+            TroopType type = TroopType.from(unit.type());
 
             PlayerTroop researched = troopRepository.findByPlayerIdAndType(attacker.getId(), type)
                     .orElseThrow(() -> new IllegalStateException(

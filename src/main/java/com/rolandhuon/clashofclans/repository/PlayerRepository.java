@@ -10,4 +10,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     List<Player> findByName(String name);
 
     List<Player> findAllByOrderByTrophiesDescNameAsc();
+
+    List<Player> findAllByOrderByIdAsc();
 }

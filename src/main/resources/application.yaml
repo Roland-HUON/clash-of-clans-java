@@ -1,7 +1,11 @@
 spring:
   application:
     name: clash-of-clans
+  web:
+    locale: en
+    locale-resolver: fixed
   jpa:
+    open-in-view: false
     show-sql: true
     hibernate:
       ddl-auto: update
@@ -9,3 +13,10 @@ spring:
 coc:
   battle:
     max-turns: 180
+  api:
+    rate-limit:
+      enabled: true
+      capacity: 60
+      refill-seconds: 60
+      max-tracked-clients: 10000
+      trust-forwarded-for: false

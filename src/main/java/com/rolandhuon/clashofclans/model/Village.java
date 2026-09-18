@@ -1,5 +1,7 @@
 package com.rolandhuon.clashofclans.model;
 
+import com.rolandhuon.clashofclans.domain.building.BuildingType;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,18 +22,19 @@ public class Village {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private int gold, elixir, darkElixir;
+    private long gold, elixir, darkElixir;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "player_id")
     private Player player;
 
     @OneToMany(mappedBy = "village", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id")
     private List<VillageBuilding> buildings = new ArrayList<>();
 
     protected Village(){}
 
-    public Village(String name, int gold, int elixir, int darkElixir) {
+    public Village(String name, long gold, long elixir, long darkElixir) {
         this.name = name;
         this.gold = gold;
         this.elixir = elixir;
@@ -38,11 +42,24 @@ public class Village {
     }
 
     public void addBuilding(VillageBuilding building) {
+        BuildingType type = building.getType();
+        long already = buildings.stream().filter(b -> b.getType() == type).count();
+
+        if (already >= type.maxCount()) {
+            throw new IllegalStateException("Too many " + type.label() + " (max " + type.maxCount() + ")");
+        }
+
         buildings.add(building);
         building.setVillage(this);
     }
 
-    public void loot(int gold, int elixir, int darkElixir) {
+    public void stock(long gold, long elixir, long darkElixir) {
+        this.gold += gold;
+        this.elixir += elixir;
+        this.darkElixir += darkElixir;
+    }
+
+    public void loot(long gold, long elixir, long darkElixir) {
         this.gold = Math.max(0, this.gold - gold);
         this.elixir = Math.max(0, this.elixir - elixir);
         this.darkElixir = Math.max(0, this.darkElixir - darkElixir);
@@ -53,14 +70,14 @@ public class Village {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public int getGold() { return gold; }
-    public void setGold(int gold) { this.gold = gold; }
+    public long getGold() { return gold; }
+    public void setGold(long gold) { this.gold = gold; }
 
-    public int getElixir() { return elixir; }
-    public void setElixir(int elixir) { this.elixir = elixir; }
+    public long getElixir() { return elixir; }
+    public void setElixir(long elixir) { this.elixir = elixir; }
 
-    public int getDarkElixir() { return darkElixir; }
-    public void setDarkElixir(int darkElixir) { this.darkElixir = darkElixir; }
+    public long getDarkElixir() { return darkElixir; }
+    public void setDarkElixir(long darkElixir) { this.darkElixir = darkElixir; }
 
     public Player getPlayer() { return player; }
     public void setPlayer(Player player) { this.player = player; }

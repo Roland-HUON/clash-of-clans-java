@@ -1,4 +1,7 @@
 package com.rolandhuon.clashofclans.dto;
 
-public record UnitRequest(String type, int level, int count) {
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
+public record UnitRequest(@NotBlank String type, @Min(1) int level, @Min(1) int count) {
 }

@@ -1,0 +1,627 @@
+{
+  "info": {
+    "name": "Clash of Clans API",
+    "description": "Clash of Clans game engine exposed over REST.\n\nVariables: baseUrl, playerId, villageId, buildingId, troopId.\nStart the application, then run the Catalog folder to check everything responds.\n\nRequires Docker Desktop running (PostgreSQL).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "playerId",
+      "value": "1"
+    },
+    {
+      "key": "villageId",
+      "value": "1"
+    },
+    {
+      "key": "buildingId",
+      "value": "1"
+    },
+    {
+      "key": "troopId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Catalog",
+      "description": "Reference data: stats per level, range, upgrade cost and currency.",
+      "item": [
+        {
+          "name": "List troop types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/troop-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "troop-types"
+              ]
+            },
+            "description": "Static catalog, compiled into the TroopType enum."
+          },
+          "response": []
+        },
+        {
+          "name": "Get one troop type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/troop-types/BARBARIAN",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "troop-types",
+                "BARBARIAN"
+              ]
+            },
+            "description": "404 when the type does not exist. Case insensitive."
+          },
+          "response": []
+        },
+        {
+          "name": "List building types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/building-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "building-types"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get one building type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/building-types/MILITARY_CAMP",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "building-types",
+                "MILITARY_CAMP"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Players",
+      "description": "Full CRUD. Name lookup uses a query parameter.",
+      "item": [
+        {
+          "name": "List all players",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Search by name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players?name=Roland",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Roland"
+                }
+              ]
+            },
+            "description": "Collection filter: no match returns 200 with an empty array, not 404."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a player",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}"
+              ]
+            },
+            "description": "404 when the id does not exist, 400 when the id is not a number."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a player",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/players",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players"
+              ]
+            },
+            "description": "201 Created. Trophies start at 0.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Newbie\",\n  \"level\": 1,\n  \"gold\": 5000,\n  \"elixir\": 5000,\n  \"darkElixir\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a player",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}"
+              ]
+            },
+            "description": "Full replacement. Trophies are left untouched.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Roland\",\n  \"level\": 13,\n  \"gold\": 300000,\n  \"elixir\": 150000,\n  \"darkElixir\": 9000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a player",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}"
+              ]
+            },
+            "description": "204 No Content. 404 when already deleted."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Villages",
+      "description": "A player owns several villages. Each village holds buildings.",
+      "item": [
+        {
+          "name": "List a player villages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}/villages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}",
+                "villages"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Create a village",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}/villages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}",
+                "villages"
+              ]
+            },
+            "description": "Village resources are the ones that can be looted.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Camp\",\n  \"gold\": 10000,\n  \"elixir\": 8000,\n  \"darkElixir\": 200\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a village",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{villageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{villageId}}"
+              ]
+            },
+            "description": "Includes every building with level, hit points, housing capacity and upgrade cost."
+          },
+          "response": []
+        },
+        {
+          "name": "Add a building",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{villageId}}/buildings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{villageId}}",
+                "buildings"
+              ]
+            },
+            "description": "400 when the maxCount of that type is already reached.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"MILITARY_CAMP\",\n  \"level\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a village",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/villages/{{villageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "villages",
+                "{{villageId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Troops and upgrades",
+      "description": "Upgrade costs live in the stats tables. Each type has its own currency.",
+      "item": [
+        {
+          "name": "List a player troops",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}/troops",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}",
+                "troops"
+              ]
+            },
+            "description": "Research level per troop type. 404 when the player does not exist."
+          },
+          "response": []
+        },
+        {
+          "name": "Upgrade a building",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/buildings/{{buildingId}}/upgrade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "buildings",
+                "{{buildingId}}",
+                "upgrade"
+              ]
+            },
+            "description": "Spends the currency of the type: gold, elixir or dark elixir. 409 when the balance is too low."
+          },
+          "response": []
+        },
+        {
+          "name": "Upgrade a troop",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/troops/{{troopId}}/upgrade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "troops",
+                "{{troopId}}",
+                "upgrade"
+              ]
+            },
+            "description": "Spends elixir. 400 when the max level is reached."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Raids",
+      "description": "Attack a persisted village. Reuses the battle engine without modifying it.",
+      "item": [
+        {
+          "name": "Launch a raid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/raids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "raids"
+              ]
+            },
+            "description": "Troop levels come from the attacker research.\nArmy size is capped by the housing capacity of the attacking village military camps.\nLoot is proportional to the destruction percentage.\nTrophies move according to the star count.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attackerId\": 1,\n  \"attackerVillageId\": 1,\n  \"targetVillageId\": 2,\n  \"army\": [\n    {\n      \"type\": \"BARBARIAN\",\n      \"count\": 20\n    },\n    {\n      \"type\": \"ARCHER\",\n      \"count\": 15\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Battles (simulation)",
+      "description": "Free simulation, no players or villages required.",
+      "item": [
+        {
+          "name": "Simulate a battle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/battles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "battles"
+              ]
+            },
+            "description": "Off-database fight: army and village are described by hand, only the result is persisted.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"army\": [\n    {\n      \"type\": \"BARBARIAN\",\n      \"level\": 13,\n      \"count\": 13\n    }\n  ],\n  \"village\": [\n    {\n      \"type\": \"LABORATORY\",\n      \"level\": 15\n    },\n    {\n      \"type\": \"HEROHALL\",\n      \"level\": 12\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Battle history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/battles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "battles"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Leaderboard",
+      "description": "Trophy ranking.",
+      "item": [
+        {
+          "name": "Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard?limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "leaderboard"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Sorted by trophies descending. limit between 1 and 100, defaults to 10."
+          },
+          "response": []
+        },
+        {
+          "name": "Rank of a player",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/players/{{playerId}}/rank",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "players",
+                "{{playerId}}",
+                "rank"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

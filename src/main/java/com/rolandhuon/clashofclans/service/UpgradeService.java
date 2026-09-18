@@ -52,7 +52,7 @@ public class UpgradeService {
 
         ResourceType resource = type.upgradeResource();
         int cost = type.upgradeCostFrom(currentLevel);
-        int balance = owner.balanceOf(resource);
+        long balance = owner.balanceOf(resource);
 
         if (balance < cost) {
             throw new InsufficientResourcesException(resource.name().toLowerCase().replace('_', ' '), balance, cost);

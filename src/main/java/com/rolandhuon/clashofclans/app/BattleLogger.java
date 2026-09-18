@@ -8,6 +8,6 @@ import org.springframework.stereotype.Component;
 public class BattleLogger {
     @EventListener
     public void onUnitDied(UnitDiedEvent event){
-        System.out.println(event.dead().getName() + " is dead !");
+        System.out.println(event.dead().getName() + " is dead.");
     }
 }

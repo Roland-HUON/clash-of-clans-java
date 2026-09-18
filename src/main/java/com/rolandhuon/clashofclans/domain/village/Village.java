@@ -1,6 +1,7 @@
 package com.rolandhuon.clashofclans.domain.village;
 
 import com.rolandhuon.clashofclans.domain.building.Building;
+import com.rolandhuon.clashofclans.domain.common.Attacker;
 import com.rolandhuon.clashofclans.domain.common.Damageable;
 
 import java.util.ArrayList;
@@ -13,7 +14,9 @@ public class Village {
         long buildingHere = buildings.stream()
                 .filter(x -> x.getType() == building.getType())
                 .count();
-        if( buildingHere >= building.getType().maxCount()) throw new IllegalStateException("Invalid number of the building : " + building.getType().name());
+        if(buildingHere >= building.getType().maxCount()){
+            throw new IllegalStateException("Too many " + building.getType().label() + " (max " + building.getType().maxCount() + ")");
+        }
         buildings.add(building);
     }
 
@@ -21,6 +24,14 @@ public class Village {
         return List.copyOf(buildings.stream()
                 .filter(Building::isAlive)
                 .toList());
+    }
+
+    public List<Attacker> aliveDefenders(){
+        return buildings.stream()
+                .filter(Building::isAlive)
+                .filter(Attacker.class::isInstance)
+                .map(Attacker.class::cast)
+                .toList();
     }
 
     public boolean isDestroyed(){

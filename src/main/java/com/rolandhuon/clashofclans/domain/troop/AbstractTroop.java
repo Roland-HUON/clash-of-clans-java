@@ -1,7 +1,9 @@
 package com.rolandhuon.clashofclans.domain.troop;
 
 import com.rolandhuon.clashofclans.domain.battle.TargetingMode;
+import com.rolandhuon.clashofclans.domain.common.AttackProfile;
 import com.rolandhuon.clashofclans.domain.common.Damageable;
+import com.rolandhuon.clashofclans.domain.common.Movement;
 import com.rolandhuon.clashofclans.domain.entity.AbstractDamageableEntity;
 
 import java.util.Objects;
@@ -36,4 +38,10 @@ public abstract class AbstractTroop extends AbstractDamageableEntity<TroopType> 
     }
 
     public TargetingMode targetingMode(){ return getType().targetingMode(); }
+
+    public TroopRole role(){ return getType().role(); }
+
+    public Movement movement(){ return getType().movement(); }
+
+    public AttackProfile attackProfile(){ return getType().attackProfile(); }
 }

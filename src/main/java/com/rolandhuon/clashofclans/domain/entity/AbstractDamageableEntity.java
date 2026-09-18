@@ -4,16 +4,17 @@ import com.rolandhuon.clashofclans.domain.common.Damageable;
 import com.rolandhuon.clashofclans.domain.common.EntityType;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractDamageableEntity<T extends EntityType> implements Damageable {
     private final int id;
     private final T type;
-    private static int ID_CPT = 1;
+    private static final AtomicInteger ID_CPT = new AtomicInteger(1);
     private int level, maxHp, hp;
 
     protected AbstractDamageableEntity(T type, int level) {
         Objects.requireNonNull(type);
-        this.id = ID_CPT++;
+        this.id = ID_CPT.getAndIncrement();
         this.type = type;
         applyLevel(level);
     }
@@ -62,6 +63,12 @@ public abstract class AbstractDamageableEntity<T extends EntityType> implements 
         this.level = newLevel;
         this.maxHp = type.hpAt(newLevel);
         this.hp = this.maxHp;
+    }
+
+    public void heal(int amount){
+        if (amount < 0) throw new IllegalArgumentException("Heal amount must be >= 0");
+        if (!isAlive()) return;
+        this.hp = Math.min(maxHp, this.hp + amount);
     }
 
     public void onDeath(){

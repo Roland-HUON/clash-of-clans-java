@@ -1,6 +1,9 @@
 package com.rolandhuon.clashofclans.model;
 
 import com.rolandhuon.clashofclans.domain.building.BuildingType;
+
+import java.time.Duration;
+import java.time.Instant;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,6 +25,8 @@ public class VillageBuilding {
 
     private int level;
 
+    private Instant lastCollectedAt;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "village_id")
     private Village village;
@@ -34,6 +39,27 @@ public class VillageBuilding {
         }
         this.type = type;
         this.level = level;
+        this.lastCollectedAt = type.produces() ? Instant.now() : null;
+    }
+
+    public int pendingProduction(Instant now) {
+        if (!type.produces() || lastCollectedAt == null) return 0;
+
+        long minutes = Duration.between(lastCollectedAt, now).toMinutes();
+        if (minutes <= 0) return 0;
+
+        long produced = (long) type.productionPerHourAt(level) * minutes / 60;
+        return (int) Math.min(produced, type.storageCapacityAt(level));
+    }
+
+    public int collect(Instant now) {
+        int amount = pendingProduction(now);
+        if (type.produces()) lastCollectedAt = now;
+        return amount;
+    }
+
+    public void startProducing(Instant now) {
+        if (type.produces() && lastCollectedAt == null) lastCollectedAt = now;
     }
 
     public Long getId() { return id; }

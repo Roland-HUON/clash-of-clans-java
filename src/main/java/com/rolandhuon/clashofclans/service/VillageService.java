@@ -4,6 +4,7 @@ import com.rolandhuon.clashofclans.domain.building.BuildingType;
 import com.rolandhuon.clashofclans.dto.AddBuildingRequest;
 import com.rolandhuon.clashofclans.dto.VillageRequest;
 import com.rolandhuon.clashofclans.model.Player;
+import com.rolandhuon.clashofclans.domain.common.ResourceType;
 import com.rolandhuon.clashofclans.model.Village;
 import com.rolandhuon.clashofclans.model.VillageBuilding;
 import com.rolandhuon.clashofclans.repository.PlayerRepository;
@@ -29,14 +30,25 @@ public class VillageService {
         this.buildingRepository = buildingRepository;
     }
 
-    public List<Village> findByPlayer(Long playerId) {
-        if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
-        return villageRepository.findByPlayerId(playerId);
+    @Transactional(readOnly = true)
+    public List<Village> findAll() {
+        return villageRepository.findAllByOrderByIdAsc().stream().map(this::hydrate).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<Village> findByPlayer(Long playerId) {
+        if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
+
+        List<Village> villages = villageRepository.findByPlayerId(playerId);
+        villages.forEach(this::hydrate);
+        return villages;
+    }
+
+    @Transactional(readOnly = true)
     public Village findById(Long id) {
-        return villageRepository.findById(id)
+        Village village = villageRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Village", id));
+        return hydrate(village);
     }
 
     @Transactional
@@ -47,21 +59,16 @@ public class VillageService {
         Village village = new Village(request.name(), request.gold(), request.elixir(), request.darkElixir());
         player.addVillage(village);
 
-        return villageRepository.save(village);
+        return hydrate(villageRepository.save(village));
     }
 
     @Transactional
     public VillageBuilding addBuilding(Long villageId, AddBuildingRequest request) {
-        Village village = findById(villageId);
-        BuildingType type = BuildingType.valueOf(request.type().toUpperCase());
+        Village village = villageRepository.findById(villageId)
+                .orElseThrow(() -> new NotFoundException("Village", villageId));
 
-        long already = village.getBuildings().stream()
-                .filter(b -> b.getType() == type)
-                .count();
-
-        if (already >= type.maxCount()) {
-            throw new IllegalStateException("Too many " + type.label() + " (max " + type.maxCount() + ")");
-        }
+        BuildingType type = BuildingType.from(request.type());
+        payForBuilding(village.getPlayer(), type);
 
         VillageBuilding building = new VillageBuilding(type, request.level());
         village.addBuilding(building);
@@ -73,5 +80,23 @@ public class VillageService {
     public void delete(Long id) {
         if (!villageRepository.existsById(id)) throw new NotFoundException("Village", id);
         villageRepository.deleteById(id);
+    }
+
+    private void payForBuilding(Player owner, BuildingType type) {
+        ResourceType resource = type.upgradeResource();
+        int cost = type.buildCost();
+        long balance = owner.balanceOf(resource);
+
+        if (balance < cost) {
+            throw new InsufficientResourcesException(resource.name().toLowerCase().replace('_', ' '), balance, cost);
+        }
+
+        owner.spend(resource, cost);
+        playerRepository.save(owner);
+    }
+
+    private Village hydrate(Village village) {
+        village.getBuildings().size();
+        return village;
     }
 }

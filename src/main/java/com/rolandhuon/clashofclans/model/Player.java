@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +19,24 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private int level, gold, elixir, darkElixir, trophies;
+    private int level, trophies;
+    private long gold, elixir, darkElixir;
 
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id")
     private List<Village> villages = new ArrayList<>();
 
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id")
     private List<PlayerTroop> troops = new ArrayList<>();
 
     protected Player(){}
 
-    public Player(String name, int level, int gold, int elixir, int darkElixir) {
+    public Player(String name, int level, long gold, long elixir, long darkElixir) {
         this(name, level, gold, elixir, darkElixir, 0);
     }
 
-    public Player(String name, int level, int gold, int elixir, int darkElixir, int trophies) {
+    public Player(String name, int level, long gold, long elixir, long darkElixir, int trophies) {
         this.name = name;
         this.level = level;
         this.gold = gold;
@@ -51,7 +55,7 @@ public class Player {
         troop.setPlayer(this);
     }
 
-    public int balanceOf(ResourceType resource) {
+    public long balanceOf(ResourceType resource) {
         return switch (resource) {
             case GOLD -> gold;
             case ELIXIR -> elixir;
@@ -59,10 +63,10 @@ public class Player {
         };
     }
 
-    public void spend(ResourceType resource, int amount) {
+    public void spend(ResourceType resource, long amount) {
         if (amount < 0) throw new IllegalArgumentException("Amount must be >= 0");
 
-        int balance = balanceOf(resource);
+        long balance = balanceOf(resource);
         if (balance < amount) {
             throw new IllegalStateException("Not enough " + resource + ": " + balance + " < " + amount);
         }
@@ -74,11 +78,15 @@ public class Player {
         }
     }
 
-    public void earn(int gold, int elixir, int darkElixir) {
+    public void earn(long gold, long elixir, long darkElixir) {
         if (gold < 0 || elixir < 0 || darkElixir < 0) throw new IllegalArgumentException("Loot must be >= 0");
-        this.gold += gold;
-        this.elixir += elixir;
-        this.darkElixir += darkElixir;
+        this.gold = addCapped(this.gold, gold);
+        this.elixir = addCapped(this.elixir, elixir);
+        this.darkElixir = addCapped(this.darkElixir, darkElixir);
+    }
+
+    private static long addCapped(long balance, long earned) {
+        return balance > Long.MAX_VALUE - earned ? Long.MAX_VALUE : balance + earned;
     }
 
     public void applyTrophyDelta(int delta) {
@@ -93,14 +101,14 @@ public class Player {
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
 
-    public int getGold() { return gold; }
-    public void setGold(int gold) { this.gold = gold; }
+    public long getGold() { return gold; }
+    public void setGold(long gold) { this.gold = gold; }
 
-    public int getElixir() { return elixir; }
-    public void setElixir(int elixir) { this.elixir = elixir; }
+    public long getElixir() { return elixir; }
+    public void setElixir(long elixir) { this.elixir = elixir; }
 
-    public int getDarkElixir() { return darkElixir; }
-    public void setDarkElixir(int darkElixir) { this.darkElixir = darkElixir; }
+    public long getDarkElixir() { return darkElixir; }
+    public void setDarkElixir(long darkElixir) { this.darkElixir = darkElixir; }
 
     public int getTrophies() { return trophies; }
     public void setTrophies(int trophies) { this.trophies = trophies; }

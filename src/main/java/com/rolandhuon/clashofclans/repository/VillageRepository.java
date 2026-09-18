@@ -8,4 +8,6 @@ import java.util.List;
 public interface VillageRepository extends JpaRepository<Village, Long> {
 
     List<Village> findByPlayerId(Long playerId);
+
+    List<Village> findAllByOrderByIdAsc();
 }

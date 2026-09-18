@@ -1,6 +1,6 @@
 package com.rolandhuon.clashofclans.domain.battle;
 
-public record Loot(int gold, int elixir, int darkElixir) {
+public record Loot(long gold, long elixir, long darkElixir) {
 
     public Loot {
         if (gold < 0 || elixir < 0 || darkElixir < 0) {
@@ -8,7 +8,7 @@ public record Loot(int gold, int elixir, int darkElixir) {
         }
     }
 
-    public static Loot proportionalTo(int destructionPercentage, int gold, int elixir, int darkElixir) {
+    public static Loot proportionalTo(int destructionPercentage, long gold, long elixir, long darkElixir) {
         if (destructionPercentage < 0 || destructionPercentage > 100) {
             throw new IllegalArgumentException("Invalid percentage: " + destructionPercentage);
         }
@@ -26,7 +26,8 @@ public record Loot(int gold, int elixir, int darkElixir) {
         return gold == 0 && elixir == 0 && darkElixir == 0;
     }
 
-    private static int share(int stock, int percentage) {
-        return stock * percentage / 100;
+    private static long share(long stock, int percentage) {
+        if (stock < 0) throw new IllegalArgumentException("Stock must be >= 0, was " + stock);
+        return stock / 100 * percentage + stock % 100 * percentage / 100;
     }
 }

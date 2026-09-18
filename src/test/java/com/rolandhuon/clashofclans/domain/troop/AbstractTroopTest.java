@@ -17,7 +17,7 @@ class AbstractTroopTest {
         @Test
         @DisplayName("Damage above hit points kills the troop without throwing.")
         void lethalDamageKillsWithoutThrowing() {
-            Barbarian barbarian = new Barbarian(1);
+            StandardTroop barbarian = new StandardTroop(TroopType.BARBARIAN, 1);
             int overkill = barbarian.getMaxHp() + 5;
 
             assertThatCode(() -> barbarian.takeDamage(overkill))
@@ -30,7 +30,7 @@ class AbstractTroopTest {
         @Test
         @DisplayName("Negative damage is rejected and leaves the troop untouched.")
         void negativeDamageIsRejected() {
-            Barbarian barbarian = new Barbarian(1);
+            StandardTroop barbarian = new StandardTroop(TroopType.BARBARIAN, 1);
 
             assertThatThrownBy(() -> barbarian.takeDamage(-5))
                     .isInstanceOf(IllegalArgumentException.class);
@@ -46,7 +46,7 @@ class AbstractTroopTest {
         @Test
         @DisplayName("Upgrading applies the stats of the next level.")
         void upgradeAppliesNextLevelStats() {
-            Barbarian barbarian = new Barbarian(1);
+            StandardTroop barbarian = new StandardTroop(TroopType.BARBARIAN, 1);
             TroopStats expected = TroopType.BARBARIAN.statsAt(2);
 
             barbarian.upgrade();
@@ -59,7 +59,7 @@ class AbstractTroopTest {
         @Test
         @DisplayName("Upgrade stops at max level.")
         void upgradeStopsAtMaxLevel() {
-            Barbarian barbarian = new Barbarian(TroopType.BARBARIAN.maxLevel());
+            StandardTroop barbarian = new StandardTroop(TroopType.BARBARIAN, TroopType.BARBARIAN.maxLevel());
 
             assertThatThrownBy(barbarian::upgrade)
                     .isInstanceOf(IllegalStateException.class);

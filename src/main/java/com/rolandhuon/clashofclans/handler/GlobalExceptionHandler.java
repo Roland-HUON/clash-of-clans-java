@@ -4,9 +4,14 @@ import com.rolandhuon.clashofclans.dto.ErrorResponse;
 import com.rolandhuon.clashofclans.service.InsufficientResourcesException;
 import com.rolandhuon.clashofclans.service.NotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -33,5 +38,28 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse onInsufficientResources(InsufficientResourcesException e){
         return new ErrorResponse(409, e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onInvalidPayload(MethodArgumentNotValidException e){
+        String details = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + " " + error.getDefaultMessage())
+                .sorted()
+                .collect(Collectors.joining(", "));
+
+        return new ErrorResponse(400, "Invalid request: " + details);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onTypeMismatch(MethodArgumentTypeMismatchException e){
+        return new ErrorResponse(400, "Invalid value for '" + e.getName() + "': " + e.getValue());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onUnreadableBody(HttpMessageNotReadableException e){
+        return new ErrorResponse(400, "Malformed JSON body.");
     }
 }

@@ -41,7 +41,7 @@ public class PlayerService {
     }
 
     public List<Player> findAll() {
-        return playerRepository.findAll();
+        return playerRepository.findAllByOrderByIdAsc();
     }
 
     public Player findById(Long id) {
