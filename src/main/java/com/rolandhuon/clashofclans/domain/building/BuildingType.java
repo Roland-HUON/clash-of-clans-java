@@ -44,13 +44,22 @@ public enum BuildingType implements EntityType {
             new BuildingStats(6000, 13000)
     )),
 
-    MILITARY_CAMP("Military Camp", 4, GOLD,
+    MILITARY_CAMP("Military Camp", 4, ELIXIR,
             List.of(
-                    new BuildingStats(250, 0),
-                    new BuildingStats(290, 2000),
-                    new BuildingStats(330, 8000),
-                    new BuildingStats(370, 25000),
-                    new BuildingStats(420, 60000)
+                    new BuildingStats(100, 0),
+                    new BuildingStats(120, 2500),
+                    new BuildingStats(140, 10000),
+                    new BuildingStats(160, 100000),
+                    new BuildingStats(180, 250000),
+                    new BuildingStats(200, 750000),
+                    new BuildingStats(250, 1500000),
+                    new BuildingStats(300, 2200000),
+                    new BuildingStats(400, 3500000),
+                    new BuildingStats(500, 4500000),
+                    new BuildingStats(600, 7000000),
+                    new BuildingStats(700, 11000000),
+                    new BuildingStats(800, 16000000),
+                    new BuildingStats(950, 19000000)
             ),
             List.of(20, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 84, 88)),
 
