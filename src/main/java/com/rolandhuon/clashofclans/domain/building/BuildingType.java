@@ -164,8 +164,8 @@ public enum BuildingType implements EntityType {
             new Firepower(List.of(11, 13, 16, 20, 24, 32, 40, 45, 50, 62, 70, 78, 84, 90, 95, 102, 110), TargetScope.ALL, AttackProfile.splash(3.0, 0.3))),
 
     AIR_DEFENSE("Air Defense", 4, GOLD, List.of(
-            new BuildingStats(800, 220000),
-            new BuildingStats(850, 900000),
+            new BuildingStats(800, 22000),
+            new BuildingStats(850, 90000),
             new BuildingStats(900, 210000),
             new BuildingStats(950, 500000),
             new BuildingStats(1000, 800000),

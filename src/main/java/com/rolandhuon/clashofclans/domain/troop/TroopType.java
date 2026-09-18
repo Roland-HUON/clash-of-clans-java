@@ -119,20 +119,20 @@ public enum TroopType implements EntityType {
 
     HOG_RIDER("Hog Rider", 5, DARK_ELIXIR, DEFENSE_FIRST, GROUND, AttackProfile.single(0.8), List.of(
             new TroopStats(270, 60, 0),
-            new TroopStats(312, 70, 20),
-            new TroopStats(370, 80, 40),
-            new TroopStats(430, 92, 80),
-            new TroopStats(500, 105, 150),
-            new TroopStats(590, 118, 250),
-            new TroopStats(700, 140, 0),
-            new TroopStats(810, 155, 20),
-            new TroopStats(890, 165, 40),
-            new TroopStats(970, 176, 80),
-            new TroopStats(1080, 187, 150),
-            new TroopStats(1230, 200, 250),
-            new TroopStats(1380, 213, 250),
-            new TroopStats(1500, 225, 250),
-            new TroopStats(1700, 250, 250)
+            new TroopStats(312, 70, 2000),
+            new TroopStats(370, 80, 3500),
+            new TroopStats(430, 92, 5000),
+            new TroopStats(500, 105, 10000),
+            new TroopStats(590, 118, 18500),
+            new TroopStats(700, 140, 35000),
+            new TroopStats(810, 155, 47500),
+            new TroopStats(890, 165, 50000),
+            new TroopStats(970, 176, 85000),
+            new TroopStats(1080, 187, 107500),
+            new TroopStats(1230, 200, 125000),
+            new TroopStats(1380, 213, 175000),
+            new TroopStats(1500, 225, 240000),
+            new TroopStats(1700, 250, 340000)
     )),
 
     HEALER("Healer", 14, ELIXIR, WEAKEST_FIRST, AIR, TroopRole.SUPPORT, AttackProfile.single(5.0), List.of(
