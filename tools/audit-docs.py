@@ -150,6 +150,8 @@ check('git keeps LF line endings in the wrapper, so a shell can read it',
 check('the README warns that both published ports must be free',
       'Ports **8080** and **5432** must be free' in readme)
 check('and that Docker Engine is enough on Linux', 'Docker Desktop is not needed' in readme)
+check('and tells a zip recipient how to repair a wrapper that lost the bit',
+      'chmod +x mvnw' in readme and 'sh mvnw spring-boot:run' in readme)
 
 print('')
 print('== the defects the review of 2026-09-18 found ==')
