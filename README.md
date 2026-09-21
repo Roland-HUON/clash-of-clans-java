@@ -31,8 +31,9 @@ daemon itself. On macOS and on Linux the Maven wrapper has to keep its executabl
 which is why git records `mvnw` as `100755` and the Dockerfile restores it — a wrapper
 delivered without it answers `./mvnw: Permission denied` on both routes. A copy that lost
 the bit, a downloaded zip for instance, is repaired with `chmod +x mvnw`, or run once as
-`sh mvnw spring-boot:run`. The wrapper also needs `tar` and `gzip` on the `PATH`, since it
-unpacks Maven itself on first use — a stripped container may not have them.
+`sh mvnw spring-boot:run`. The wrapper also needs `unzip` on the `PATH` — or `tar` and `gzip`,
+which it falls back on — since it unpacks Maven itself on first use. Windows, macOS and every
+desktop Linux ship them; a stripped container may not.
 
 ## Run it
 
