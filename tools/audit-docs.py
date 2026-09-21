@@ -138,6 +138,20 @@ for key in sorted(set(re.findall(r'`(coc\.api\.rate-limit\.[a-z-]+)`', readme)))
     check(f'{key} exists in application.yaml', key.split('.')[-1] in yaml)
 
 print('')
+print('== the project runs on a machine that is not this one ==')
+mode = subprocess.run(['git', 'ls-files', '-s', 'mvnw'], capture_output=True, text=True).stdout.split()
+check('git records mvnw as executable, so a clone on Linux can run it',
+      bool(mode) and mode[0] == '100755', str(mode[:1]))
+dockerfile = io.open('Dockerfile', encoding='utf-8').read()
+check('the Dockerfile restores that bit before it calls the wrapper',
+      dockerfile.index('chmod +x mvnw') < dockerfile.index('./mvnw dependency:go-offline'))
+check('git keeps LF line endings in the wrapper, so a shell can read it',
+      'mvnw text eol=lf' in io.open('.gitattributes', encoding='utf-8').read())
+check('the README warns that both published ports must be free',
+      'Ports **8080** and **5432** must be free' in readme)
+check('and that Docker Engine is enough on Linux', 'Docker Desktop is not needed' in readme)
+
+print('')
 print('== the defects the review of 2026-09-18 found ==')
 opener, token = signed_in()
 write = urllib.request.Request(B + '/api/players', method='POST',

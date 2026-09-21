@@ -21,6 +21,16 @@ Maven itself you do not need: `./mvnw` fetches it on first use.
 > Only the all-in-Docker route below needs nothing but Docker — it builds inside
 > `eclipse-temurin:21-jdk`.
 
+Ports **8080** and **5432** must be free. Compose publishes PostgreSQL on the host, so a
+PostgreSQL already installed on the machine — common on Linux — stops the start with
+*port is already allocated*.
+
+On Linux, Docker Desktop is not needed: Docker Engine with the Compose plugin is enough,
+and the account must be in the `docker` group, because the development route drives the
+daemon itself. On macOS and on Linux the Maven wrapper has to keep its executable bit,
+which is why git records `mvnw` as `100755` and the Dockerfile restores it — a wrapper
+delivered without it answers `./mvnw: Permission denied` on both routes.
+
 ## Run it
 
 ### Development: application on your machine, database in Docker
@@ -372,6 +382,8 @@ application, then:
 ```bash
 python tools/audit-docs.py
 ```
+
+(`python3` on the distributions that do not ship a `python`.)
 
 It exits non-zero on any claim the code no longer supports, so documentation that
 drifts out of date fails like a test. It leaves the data alone apart from one simulated
